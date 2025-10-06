@@ -1,0 +1,63 @@
+========================================
+INTEGRACIÓN WHATSAPP CON ODOO 18
+========================================
+
+PASO 1: MANTENER LA API CORRIENDO
+----------------------------------
+1. Deja esta carpeta donde está
+2. Ejecuta: Iniciar-API.bat (o npm run api)
+3. Deja la ventana abierta (la API debe estar siempre corriendo)
+
+PASO 2: COPIAR ARCHIVOS A ODOO
+-------------------------------
+Copia el archivo:
+  odoo_integration/whatsapp_service.py
+
+A la ubicación:
+  C:\Users\ALIENWARE\Desktop\FREELANCER\Colombia\odoo_IA\custom_addons\gemini_chatbot\services\whatsapp_service.py
+
+PASO 3: EN ODOO (abre odoo_IA en Kiro)
+---------------------------------------
+1. Crea: custom_addons/gemini_chatbot/services/__init__.py
+   Contenido:
+   # -*- coding: utf-8 -*-
+   from . import whatsapp_service
+
+2. Edita: custom_addons/gemini_chatbot/__init__.py
+   Agrega:
+   from . import services
+
+3. Edita: custom_addons/gemini_chatbot/__manifest__.py
+   Agrega en external_dependencies:
+   'external_dependencies': {
+       'python': ['requests'],
+   },
+
+4. Instala requests en Docker:
+   docker ps
+   docker exec -it <nombre_contenedor> pip install requests
+
+PASO 4: USAR EN TUS MODELOS
+----------------------------
+from ..services.whatsapp_service import WhatsAppService
+
+whatsapp = WhatsAppService(api_url="http://host.docker.internal:3000")
+result = whatsapp.send_message("5215512345678", "Hola!")
+
+PASO 5: REINICIAR ODOO
+-----------------------
+docker-compose restart
+
+O actualiza el módulo desde Apps
+
+========================================
+IMPORTANTE
+========================================
+- La API Node.js debe estar SIEMPRE corriendo
+- Usa: http://host.docker.internal:3000 (para Docker)
+- Lee: odoo_integration/README_ODOO.md para más ejemplos
+
+¿Problemas?
+- Verifica que la API esté corriendo
+- Verifica que requests esté instalado en Docker
+- Revisa los logs de Odoo

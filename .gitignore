@@ -1,0 +1,27 @@
+# Dependencias
+node_modules/
+
+# Autenticación de WhatsApp (IMPORTANTE: No subir esto)
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Archivos de configuración sensibles
+numeros.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# NPM
+package-lock.json
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Archivos de imagen QR generados
+whatsapp-qr.png

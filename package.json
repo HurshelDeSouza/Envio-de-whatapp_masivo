@@ -1,0 +1,21 @@
+{
+  "name": "whatsapp-sender",
+  "version": "1.0.0",
+  "description": "Aplicación para enviar mensajes de WhatsApp masivos",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "api": "node api-server.js"
+  },
+  "keywords": [
+    "whatsapp",
+    "messaging"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.34.1"
+  }
+}
