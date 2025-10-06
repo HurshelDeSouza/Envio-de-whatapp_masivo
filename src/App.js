@@ -1,4 +1,5 @@
 const qrcode = require('qrcode-terminal');
+const QRCode = require('qrcode');
 const WhatsAppClient = require('./services/WhatsAppClient');
 const MessageSender = require('./services/MessageSender');
 const AppConfig = require('./config/AppConfig');
@@ -36,9 +37,22 @@ class App {
         }
     }
 
-    _handleQR(qr) {
+    async _handleQR(qr) {
         this.logger.logQR();
         qrcode.generate(qr, { small: true });
+        
+        // Guardar QR como imagen
+        try {
+            await QRCode.toFile('whatsapp-qr.png', qr, {
+                width: 400,
+                margin: 2
+            });
+            console.log('\n📱 QR guardado como "whatsapp-qr.png"');
+            console.log('🔄 Se actualiza cada 30 segundos automáticamente');
+            console.log('📤 Envía esta imagen al muchacho para que la escanee\n');
+        } catch (error) {
+            console.log('Error guardando QR:', error.message);
+        }
     }
 
     async _handleReady(data) {
