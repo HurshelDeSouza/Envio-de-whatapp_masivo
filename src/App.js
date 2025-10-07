@@ -1,5 +1,4 @@
-const qrcode = require('qrcode-terminal');
-const QRCode = require('qrcode');
+const QRCode = require('qrcode-generator');
 const WhatsAppClient = require('./services/WhatsAppClient');
 const MessageSender = require('./services/MessageSender');
 const AppConfig = require('./config/AppConfig');
@@ -39,20 +38,30 @@ class App {
 
     async _handleQR(qr) {
         this.logger.logQR();
-        qrcode.generate(qr, { small: true });
         
-        // Guardar QR como imagen
-        try {
-            await QRCode.toFile('whatsapp-qr.png', qr, {
-                width: 400,
-                margin: 2
-            });
-            console.log('\n📱 QR guardado como "whatsapp-qr.png"');
-            console.log('🔄 Se actualiza cada 30 segundos automáticamente');
-            console.log('📤 Envía esta imagen al muchacho para que la escanee\n');
-        } catch (error) {
-            console.log('Error guardando QR:', error.message);
+        // Crear QR compacto con qrcode-generator
+        const qrCode = QRCode(0, 'L'); // Tipo 0 (auto), nivel L (bajo)
+        qrCode.addData(qr);
+        qrCode.make();
+        
+        const size = qrCode.getModuleCount();
+        
+        // Mostrar QR completo usando caracteres de media altura
+        for (let row = 0; row < size; row += 2) {
+            let line = '';
+            for (let col = 0; col < size; col++) {
+                const top = qrCode.isDark(row, col);
+                const bottom = (row + 1 < size) ? qrCode.isDark(row + 1, col) : false;
+                
+                if (top && bottom) line += '█';
+                else if (top) line += '▀';
+                else if (bottom) line += '▄';
+                else line += ' ';
+            }
+            console.log(line);
         }
+        
+        console.log('\n🔄 Se actualiza cada 30 segundos automáticamente\n');
     }
 
     async _handleReady(data) {

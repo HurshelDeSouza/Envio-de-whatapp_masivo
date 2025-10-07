@@ -15,7 +15,9 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.21.2",
+    "qr-encode": "^0.3.0",
     "qrcode": "^1.5.4",
+    "qrcode-generator": "^2.0.4",
     "qrcode-terminal": "^0.12.0",
     "whatsapp-web.js": "^1.34.1"
   }
