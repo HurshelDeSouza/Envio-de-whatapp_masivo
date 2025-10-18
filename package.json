@@ -4,7 +4,8 @@
   "description": "Aplicación para enviar mensajes de WhatsApp masivos",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node index-group-joiner.js",
+    "send-messages": "node index.js",
     "api": "node api-server.js",
     "join-groups": "node join-groups.js"
   },

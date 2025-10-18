@@ -1,6 +1,6 @@
 /**
- * Script para unirse automáticamente a grupos de WhatsApp
- * desde Google Sheets
+ * Script principal para unirse a grupos de WhatsApp
+ * Reemplaza el index.js original para unirse a grupos en lugar de enviar mensajes
  */
 
 const { Client, LocalAuth } = require('whatsapp-web.js');
@@ -17,9 +17,9 @@ console.log('='.repeat(60));
 console.log('🤖 WhatsApp Group Auto-Joiner');
 console.log('='.repeat(60));
 
-// Inicializar cliente de WhatsApp (usa la MISMA sesión que index.js)
+// Inicializar cliente de WhatsApp (sesión única compartida)
 const client = new Client({
-    authStrategy: new LocalAuth(), // Sin clientId = usa la sesión principal
+    authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -30,7 +30,8 @@ const client = new Client({
 client.on('qr', (qr) => {
     console.log('\n📱 Escanea este código QR con WhatsApp:');
     qrcode.generate(qr, { small: true });
-    console.log('\nO abre WhatsApp Web y escanea el código\n');
+    console.log('\n⚠️  IMPORTANTE: Solo necesitas escanear UNA VEZ');
+    console.log('    Después de esto, nunca más te pedirá QR\n');
 });
 
 // Evento: Cliente listo
