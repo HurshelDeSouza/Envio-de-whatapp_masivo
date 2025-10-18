@@ -109,6 +109,23 @@ class GroupJoinerService {
 
         } catch (error) {
             console.error(`❌ Error al unirse al grupo:`, error.message);
+            
+            // Guardar grupo fallido en historial para no volver a intentar
+            this.joinedGroups.groups.push({
+                link: group.link,
+                name: group.name,
+                country: group.country,
+                members: group.members,
+                joinedAt: new Date().toISOString(),
+                groupId: 'FAILED',
+                error: error.message,
+                status: 'failed'
+            });
+            this.joinedGroups.lastJoinDate = new Date().toISOString();
+            this.saveJoinedGroups();
+            
+            console.log(`⚠️  Grupo marcado como fallido, se saltará en próximas ejecuciones`);
+            
             return {
                 success: false,
                 message: error.message,
