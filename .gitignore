@@ -7,6 +7,8 @@ node_modules/
 
 # Archivos de configuración sensibles
 numeros.json
+.env
+config/joined-groups.json
 
 # Logs
 *.log
