@@ -168,8 +168,13 @@ class GroupJoinerService {
      * Obtiene estadísticas de grupos unidos
      */
     getStats() {
+        const successful = this.joinedGroups.groups.filter(g => g.groupId !== 'FAILED').length;
+        const failed = this.joinedGroups.groups.filter(g => g.groupId === 'FAILED').length;
+        
         return {
             totalGroups: this.joinedGroups.groups.length,
+            successfulGroups: successful,
+            failedGroups: failed,
             lastJoinDate: this.joinedGroups.lastJoinDate,
             groups: this.joinedGroups.groups
         };

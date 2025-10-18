@@ -115,7 +115,10 @@ client.on('ready', async () => {
 
         // Estadísticas finales
         const stats = joinerService.getStats();
-        console.log(`\n📈 Total de grupos unidos hasta ahora: ${stats.totalGroups}`);
+        console.log(`\n📊 ESTADÍSTICAS GENERALES:`);
+        console.log(`   Total de grupos verificados: ${stats.totalGroups}`);
+        console.log(`   ✅ Grupos agregados exitosamente: ${stats.successfulGroups}`);
+        console.log(`   ❌ Grupos fallidos: ${stats.failedGroups}`);
         
         console.log('\n✅ Proceso completado!');
         process.exit(0);
