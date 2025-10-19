@@ -50,9 +50,47 @@
         }
 
         .main-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .tabs-container {
+            display: flex;
+            background: #f3f4f6;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab:hover {
+            background: #e5e7eb;
+            color: #333;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .card {
@@ -256,28 +294,198 @@
         </div>
 
         <div class="main-content">
-            <!-- Panel Principal -->
-            <div class="card">
+            <!-- Tabs -->
+            <div class="tabs-container">
+                <div class="tab active" onclick="switchTab('config')">
+                    📝 Configurar Mensaje
+                </div>
+                <div class="tab" onclick="switchTab('templates')">
+                    📋 Templates
+                </div>
+                <div class="tab" onclick="switchTab('campaigns')">
+                    📅 Campañas Programadas
+                </div>
+                <div class="tab" onclick="switchTab('stats')">
+                    📊 Estadísticas
+                </div>
+            </div>
+
+            <!-- Tab Content: Configurar Mensaje -->
+            <div id="tab-config" class="tab-content active">
                 <h2>Configurar Mensaje</h2>
 
-                <div class="form-group">
-                    <label>Filtrar por País</label>
-                    <select id="country-select" onchange="loadGroups()">
-                        <option value="USA">🇺🇸 USA</option>
-                        <option value="COLOMBIA">🇨🇴 Colombia</option>
-                        <option value="VENEZUELA">🇻🇪 Venezuela</option>
-                        <option value="ARGENTINA">🇦🇷 Argentina</option>
-                        <option value="MEXICO">🇲🇽 México</option>
-                    </select>
+                <!-- Radio Buttons para seleccionar modo -->
+                <div style="display: flex; gap: 30px; margin-bottom: 30px; padding: 20px; background: #f9fafb; border-radius: 10px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1.1em; font-weight: bold;">
+                        <input type="radio" name="send-mode" value="numbers" onchange="changeSendMode('numbers')">
+                        📱 Numbers
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1.1em; font-weight: bold;">
+                        <input type="radio" name="send-mode" value="groups" checked onchange="changeSendMode('groups')">
+                        👥 Groups
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1.1em; font-weight: bold;">
+                        <input type="radio" name="send-mode" value="contacts" onchange="changeSendMode('contacts')">
+                        📇 Contacts
+                    </label>
                 </div>
 
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="select-all" onchange="toggleSelectAll()">
-                        Seleccionar Todos (<span id="group-count">0</span> grupos)
-                    </label>
-                    <div id="groups-list" style="max-height: 200px; overflow-y: auto; border: 2px solid #e5e7eb; border-radius: 8px; padding: 10px;">
-                        <p style="color: #666;">Cargando grupos...</p>
+                <!-- Sección para Numbers -->
+                <div id="section-numbers" style="display: none;">
+                    <div class="form-group">
+                        <label>Ingrese números para enviar mensajes</label>
+                        
+                        <!-- Selector de código de país con bandera -->
+                        <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px;">
+                            <!-- Custom Country Selector -->
+                            <div style="position: relative; width: 200px;">
+                                <div id="country-selector-btn" onclick="toggleCountryDropdown()" style="padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 1em;">
+                                    <span id="selected-country">🇨🇦 +1</span>
+                                    <span>▼</span>
+                                </div>
+                                
+                                <!-- Dropdown de países -->
+                                <div id="country-dropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; max-width: 350px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 5px; z-index: 1000; max-height: 400px; overflow: hidden;">
+                                    <!-- Barra de búsqueda -->
+                                    <div style="padding: 10px; border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
+                                        <input type="text" id="country-search" placeholder="🔍 Buscar país..." style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9em;" oninput="filterCountries()" onclick="event.stopPropagation()">
+                                    </div>
+                                    
+                                    <!-- Lista de países -->
+                                    <div id="countries-list" style="max-height: 350px; overflow-y: auto;">
+                                        <!-- Los países se cargarán aquí -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="flex: 1;">
+                                <p style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
+                                    Enter numbers separated by comma or one below the other.<br>
+                                    Eg. 5062345678, 5062876543
+                                </p>
+                                <textarea id="numbers-input" placeholder="Ingrese números aquí..." style="width: 100%; min-height: 100px; font-family: monospace; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1em;"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <button class="btn-secondary" onclick="showExampleNumbers()">📋 Ejemplo</button>
+                            <button class="btn-secondary" onclick="uploadNumbersFile()">📤 Subir Excel</button>
+                            <select style="padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer;">
+                                <option>Campaign Numbers</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Área de mensaje con opciones de formato -->
+                    <div class="form-group">
+                        <label>Introducir mensaje</label>
+                        <div style="border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                            <!-- Barra de formato -->
+                            <div style="background: #f9fafb; padding: 8px; border-bottom: 1px solid #e5e7eb; display: flex; gap: 10px; align-items: center;">
+                                <button onclick="formatText('bold')" style="padding: 5px 10px; border: 1px solid #e5e7eb; background: white; border-radius: 4px; cursor: pointer; font-weight: bold;">*text*</button>
+                                <button onclick="formatText('italic')" style="padding: 5px 10px; border: 1px solid #e5e7eb; background: white; border-radius: 4px; cursor: pointer; font-style: italic;">_text_</button>
+                                <button onclick="formatText('strike')" style="padding: 5px 10px; border: 1px solid #e5e7eb; background: white; border-radius: 4px; cursor: pointer; text-decoration: line-through;">~text~</button>
+                                <button onclick="formatText('code')" style="padding: 5px 10px; border: 1px solid #e5e7eb; background: white; border-radius: 4px; cursor: pointer; font-family: monospace;">`text`</button>
+                                <span style="color: #999; margin-left: auto;">EMOJIS</span>
+                            </div>
+                            
+                            <!-- Área de texto -->
+                            <textarea id="message-numbers" placeholder="Escribe tu mensaje aquí..." style="width: 100%; min-height: 150px; border: none; padding: 15px; font-size: 1em; resize: vertical; font-family: inherit;"></textarea>
+                            
+                            <!-- Barra inferior con clip y template -->
+                            <div style="background: #f9fafb; padding: 10px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; align-items: center;">
+                                <button onclick="attachFile()" style="padding: 8px 15px; border: 1px solid #e5e7eb; background: white; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                    📎
+                                </button>
+                                
+                                <div style="position: relative;">
+                                    <button onclick="toggleTemplateMenu()" id="template-btn" style="padding: 8px 15px; border: 1px solid #e5e7eb; background: white; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                        Template ▼
+                                    </button>
+                                    
+                                    <!-- Menú desplegable de templates -->
+                                    <div id="template-dropdown" style="display: none; position: absolute; bottom: 100%; left: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 200px; margin-bottom: 5px; z-index: 1000;">
+                                        <div style="padding: 10px; color: #666; text-align: center; border-bottom: 1px solid #e5e7eb;">
+                                            ¡Nada que mostrar!
+                                        </div>
+                                        <div onclick="showAddTemplateModal()" style="padding: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">
+                                            📋 Add Template
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal: Add Template -->
+                <div id="add-template-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+                    <div style="background: #e0f2f1; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%; position: relative;">
+                        <button onclick="closeAddTemplateModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 2em; cursor: pointer; color: #333;">×</button>
+                        
+                        <h2 style="margin-bottom: 20px; color: #333;">Add Template</h2>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <textarea id="template-content" placeholder="Escribe tu plantilla aquí..." style="width: 100%; min-height: 200px; padding: 15px; border: 2px solid #b2dfdb; border-radius: 8px; font-size: 1em; resize: vertical; font-family: inherit;"></textarea>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                            <label style="color: #333; font-weight: bold;">Save as</label>
+                            <input type="text" id="template-name" placeholder="Nombre de la plantilla" style="flex: 1; padding: 12px; border: 2px solid #b2dfdb; border-radius: 8px; font-size: 1em;">
+                        </div>
+                        
+                        <button onclick="saveTemplate()" style="background: #26a69a; color: white; border: none; padding: 15px 40px; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; width: 100%;">
+                            Save Template
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sección para Groups -->
+                <div id="section-groups">
+                    <div class="form-group">
+                        <label>Filtrar por País</label>
+                        <select id="country-select" onchange="loadGroups()">
+                            <option value="USA">🇺🇸 USA</option>
+                            <option value="COLOMBIA">🇨🇴 Colombia</option>
+                            <option value="VENEZUELA">🇻🇪 Venezuela</option>
+                            <option value="ARGENTINA">🇦🇷 Argentina</option>
+                            <option value="MEXICO">🇲🇽 México</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="select-all" onchange="toggleSelectAll()">
+                            Seleccionar Todos (<span id="group-count">0</span> grupos)
+                        </label>
+                        <div style="margin-bottom: 10px;">
+                            <input type="text" id="search-groups" placeholder="🔍 Buscar grupos por nombre..." style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;" oninput="filterGroups()">
+                        </div>
+                        <div id="groups-list" style="max-height: 200px; overflow-y: auto; border: 2px solid #e5e7eb; border-radius: 8px; padding: 10px;">
+                            <p style="color: #666;">Cargando grupos...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección para Contacts -->
+                <div id="section-contacts" style="display: none;">
+                    <div class="form-group">
+                        <label>Seleccionar contactos para enviar mensaje</label>
+                        <p style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
+                            Seleccione contactos desde el dropdown...
+                        </p>
+                        <select id="contacts-select" multiple style="min-height: 150px;">
+                            <option value="">Cargando contactos...</option>
+                        </select>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <input type="text" id="search-contacts" placeholder="🔍 Buscar contactos por nombre..." style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;" oninput="filterContacts()">
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <label>
+                            <input type="checkbox" id="select-all-contacts" onchange="toggleSelectAllContacts()">
+                            Seleccionar Todos
+                        </label>
                     </div>
                 </div>
 
@@ -341,26 +549,69 @@
                 <div id="status-message" class="status-message"></div>
             </div>
 
-            <!-- Panel Lateral -->
-            <div>
-                <div class="card">
-                    <h2>📝 Templates</h2>
-                    <div class="template-list" id="templates-list">
-                        <p style="color: #666;">Cargando templates...</p>
-                    </div>
-                    <button class="btn-secondary" onclick="showNewTemplateModal()">
-                        ➕ Nuevo Template
+            <!-- Tab Content: Templates -->
+            <div id="tab-templates" class="tab-content">
+                <h2>📋 Templates de Mensajes</h2>
+                <p style="color: #666; margin-bottom: 20px;">Guarda y reutiliza tus mensajes más frecuentes</p>
+                
+                <button class="btn-secondary" onclick="showNewTemplateModal()" style="margin-bottom: 20px;">
+                    ➕ Nuevo Template
+                </button>
+
+                <div class="template-list" id="templates-list" style="max-height: 500px;">
+                    <p style="color: #666;">Cargando templates...</p>
+                </div>
+            </div>
+
+            <!-- Tab Content: Campañas Programadas -->
+            <div id="tab-campaigns" class="tab-content">
+                <h2>📅 Campañas Programadas</h2>
+                <p style="color: #666; margin-bottom: 20px;">Programa tus envíos para fecha y hora específica</p>
+
+                <div style="margin-bottom: 20px;">
+                    <button class="btn-primary" onclick="showScheduleCampaignModal()">
+                        ➕ Programar Nueva Campaña
                     </button>
                 </div>
 
-                <div class="card" style="margin-top: 20px;">
-                    <h2>📊 Estadísticas</h2>
-                    <div id="campaign-stats">
-                        <p><strong>Total grupos:</strong> <span id="stat-total">0</span></p>
-                        <p><strong>Enviados:</strong> <span id="stat-sent">0</span></p>
-                        <p><strong>Fallidos:</strong> <span id="stat-failed">0</span></p>
-                        <p><strong>Progreso:</strong> <span id="stat-progress">0%</span></p>
+                <h3 style="margin-top: 30px; margin-bottom: 15px;">Próximas Campañas</h3>
+                <div id="scheduled-campaigns-list" style="border: 2px solid #e5e7eb; border-radius: 8px; padding: 15px; min-height: 200px;">
+                    <p style="color: #666;">No hay campañas programadas</p>
+                </div>
+
+                <h3 style="margin-top: 30px; margin-bottom: 15px;">Campañas Pausadas</h3>
+                <div id="paused-campaigns-list" style="border: 2px solid #e5e7eb; border-radius: 8px; padding: 15px; min-height: 200px;">
+                    <p style="color: #666;">No hay campañas pausadas</p>
+                </div>
+            </div>
+
+            <!-- Tab Content: Estadísticas -->
+            <div id="tab-stats" class="tab-content">
+                <h2>📊 Estadísticas de Envíos</h2>
+                <p style="color: #666; margin-bottom: 20px;">Monitorea el rendimiento de tus campañas</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2.5em; font-weight: bold;" id="stat-total">0</div>
+                        <div style="font-size: 1.1em;">Total Grupos</div>
                     </div>
+                    <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2.5em; font-weight: bold;" id="stat-sent">0</div>
+                        <div style="font-size: 1.1em;">Enviados</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2.5em; font-weight: bold;" id="stat-failed">0</div>
+                        <div style="font-size: 1.1em;">Fallidos</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 2.5em; font-weight: bold;" id="stat-progress">0%</div>
+                        <div style="font-size: 1.1em;">Progreso</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 15px;">Historial de Campañas</h3>
+                <div id="campaigns-history" style="border: 2px solid #e5e7eb; border-radius: 8px; padding: 15px; min-height: 300px;">
+                    <p style="color: #666;">No hay historial de campañas</p>
                 </div>
             </div>
         </div>
@@ -386,8 +637,386 @@
 
             loadGroups();
             loadTemplates();
+            loadScheduledCampaigns();
             setupSocketListeners();
         };
+
+        function switchTab(tabName) {
+            // Ocultar todos los tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Mostrar el tab seleccionado
+            document.getElementById('tab-' + tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Cargar datos según el tab
+            if (tabName === 'templates') {
+                loadTemplates();
+            } else if (tabName === 'campaigns') {
+                loadScheduledCampaigns();
+            } else if (tabName === 'stats') {
+                loadStatistics();
+            }
+        }
+
+        function changeSendMode(mode) {
+            // Ocultar todas las secciones
+            document.getElementById('section-numbers').style.display = 'none';
+            document.getElementById('section-groups').style.display = 'none';
+            document.getElementById('section-contacts').style.display = 'none';
+
+            // Mostrar la sección seleccionada
+            document.getElementById('section-' + mode).style.display = 'block';
+
+            // Cargar datos según el modo
+            if (mode === 'groups') {
+                loadGroups();
+            } else if (mode === 'contacts') {
+                loadContacts();
+            }
+        }
+
+        function filterGroups() {
+            const searchTerm = document.getElementById('search-groups').value.toLowerCase();
+            const filteredGroups = allGroups.filter(group => 
+                (group.name || '').toLowerCase().includes(searchTerm)
+            );
+            displayGroups(filteredGroups);
+        }
+
+        function showExampleNumbers() {
+            document.getElementById('numbers-input').value = '+15062345678, +15062876543\n+15063456789';
+        }
+
+        function uploadNumbersFile() {
+            alert('Funcionalidad de subir Excel en desarrollo');
+        }
+
+        function formatText(type) {
+            const textarea = document.getElementById('message-numbers');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            
+            if (!selectedText) {
+                alert('Por favor selecciona el texto que deseas formatear');
+                return;
+            }
+            
+            let formattedText = '';
+            switch(type) {
+                case 'bold':
+                    formattedText = `*${selectedText}*`;
+                    break;
+                case 'italic':
+                    formattedText = `_${selectedText}_`;
+                    break;
+                case 'strike':
+                    formattedText = `~${selectedText}~`;
+                    break;
+                case 'code':
+                    formattedText = `\`${selectedText}\``;
+                    break;
+            }
+            
+            textarea.value = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start, start + formattedText.length);
+        }
+
+        function attachFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*,video/*,application/pdf,.doc,.docx';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    alert(`Archivo seleccionado: ${file.name}\n(Funcionalidad de envío en desarrollo)`);
+                }
+            };
+            input.click();
+        }
+
+        function toggleTemplateMenu() {
+            const dropdown = document.getElementById('template-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Cerrar el menú si se hace clic fuera de él
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('template-dropdown');
+            const btn = document.getElementById('template-btn');
+            
+            if (dropdown && btn && !dropdown.contains(event.target) && !btn.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        function showAddTemplateModal() {
+            document.getElementById('add-template-modal').style.display = 'flex';
+            document.getElementById('template-dropdown').style.display = 'none';
+        }
+
+        function closeAddTemplateModal() {
+            document.getElementById('add-template-modal').style.display = 'none';
+            document.getElementById('template-content').value = '';
+            document.getElementById('template-name').value = '';
+        }
+
+        function saveTemplate() {
+            const content = document.getElementById('template-content').value.trim();
+            const name = document.getElementById('template-name').value.trim();
+            
+            if (!content) {
+                alert('Por favor escribe el contenido de la plantilla');
+                return;
+            }
+            
+            if (!name) {
+                alert('Por favor escribe un nombre para la plantilla');
+                return;
+            }
+            
+            fetch('/api/templates', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    name: name, 
+                    message: content, 
+                    category: 'general' 
+                })
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    alert('✅ Template guardado exitosamente');
+                    closeAddTemplateModal();
+                    loadTemplates();
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            })
+            .catch(error => {
+                alert('❌ Error al guardar template: ' + error.message);
+            });
+        }
+
+        // Lista completa de países con códigos
+        const countries = [
+            { name: 'Canada', code: '+1', flag: '🇨🇦', native: 'Canada' },
+            { name: 'United States', code: '+1', flag: '🇺🇸', native: 'United States' },
+            { name: 'Afghanistan', code: '+93', flag: '🇦🇫', native: 'افغانستان' },
+            { name: 'Albania', code: '+355', flag: '🇦🇱', native: 'Shqipëri' },
+            { name: 'Algeria', code: '+213', flag: '🇩🇿', native: 'الجزائر' },
+            { name: 'American Samoa', code: '+1', flag: '🇦🇸', native: 'American Samoa' },
+            { name: 'Andorra', code: '+376', flag: '🇦🇩', native: 'Andorra' },
+            { name: 'Angola', code: '+244', flag: '🇦🇴', native: 'Angola' },
+            { name: 'Argentina', code: '+54', flag: '🇦🇷', native: 'Argentina' },
+            { name: 'Armenia', code: '+374', flag: '🇦🇲', native: 'Հայաստան' },
+            { name: 'Australia', code: '+61', flag: '🇦🇺', native: 'Australia' },
+            { name: 'Austria', code: '+43', flag: '🇦🇹', native: 'Österreich' },
+            { name: 'Azerbaijan', code: '+994', flag: '🇦🇿', native: 'Azərbaycan' },
+            { name: 'Bahamas', code: '+1242', flag: '🇧🇸', native: 'Bahamas' },
+            { name: 'Bahrain', code: '+973', flag: '🇧🇭', native: 'البحرين' },
+            { name: 'Bangladesh', code: '+880', flag: '🇧🇩', native: 'বাংলাদেশ' },
+            { name: 'Barbados', code: '+1246', flag: '🇧🇧', native: 'Barbados' },
+            { name: 'Belarus', code: '+375', flag: '🇧🇾', native: 'Беларусь' },
+            { name: 'Belgium', code: '+32', flag: '🇧🇪', native: 'België' },
+            { name: 'Belize', code: '+501', flag: '🇧🇿', native: 'Belize' },
+            { name: 'Benin', code: '+229', flag: '🇧🇯', native: 'Bénin' },
+            { name: 'Bolivia', code: '+591', flag: '🇧🇴', native: 'Bolivia' },
+            { name: 'Bosnia', code: '+387', flag: '🇧🇦', native: 'Bosna i Hercegovina' },
+            { name: 'Botswana', code: '+267', flag: '🇧🇼', native: 'Botswana' },
+            { name: 'Brazil', code: '+55', flag: '🇧🇷', native: 'Brasil' },
+            { name: 'Bulgaria', code: '+359', flag: '🇧🇬', native: 'България' },
+            { name: 'Cambodia', code: '+855', flag: '🇰🇭', native: 'កម្ពុជា' },
+            { name: 'Cameroon', code: '+237', flag: '🇨🇲', native: 'Cameroun' },
+            { name: 'Chile', code: '+56', flag: '🇨🇱', native: 'Chile' },
+            { name: 'China', code: '+86', flag: '🇨🇳', native: '中国' },
+            { name: 'Colombia', code: '+57', flag: '🇨🇴', native: 'Colombia' },
+            { name: 'Costa Rica', code: '+506', flag: '🇨🇷', native: 'Costa Rica' },
+            { name: 'Croatia', code: '+385', flag: '🇭🇷', native: 'Hrvatska' },
+            { name: 'Cuba', code: '+53', flag: '🇨🇺', native: 'Cuba' },
+            { name: 'Cyprus', code: '+357', flag: '🇨🇾', native: 'Κύπρος' },
+            { name: 'Czech Republic', code: '+420', flag: '🇨🇿', native: 'Česká republika' },
+            { name: 'Denmark', code: '+45', flag: '🇩🇰', native: 'Danmark' },
+            { name: 'Dominican Republic', code: '+1809', flag: '🇩🇴', native: 'República Dominicana' },
+            { name: 'Ecuador', code: '+593', flag: '🇪🇨', native: 'Ecuador' },
+            { name: 'Egypt', code: '+20', flag: '🇪🇬', native: 'مصر' },
+            { name: 'El Salvador', code: '+503', flag: '🇸🇻', native: 'El Salvador' },
+            { name: 'Estonia', code: '+372', flag: '🇪🇪', native: 'Eesti' },
+            { name: 'Ethiopia', code: '+251', flag: '🇪🇹', native: 'ኢትዮጵያ' },
+            { name: 'Finland', code: '+358', flag: '🇫🇮', native: 'Suomi' },
+            { name: 'France', code: '+33', flag: '🇫🇷', native: 'France' },
+            { name: 'Germany', code: '+49', flag: '🇩🇪', native: 'Deutschland' },
+            { name: 'Ghana', code: '+233', flag: '🇬🇭', native: 'Ghana' },
+            { name: 'Greece', code: '+30', flag: '🇬🇷', native: 'Ελλάδα' },
+            { name: 'Guatemala', code: '+502', flag: '🇬🇹', native: 'Guatemala' },
+            { name: 'Haiti', code: '+509', flag: '🇭🇹', native: 'Haïti' },
+            { name: 'Honduras', code: '+504', flag: '🇭🇳', native: 'Honduras' },
+            { name: 'Hong Kong', code: '+852', flag: '🇭🇰', native: '香港' },
+            { name: 'Hungary', code: '+36', flag: '🇭🇺', native: 'Magyarország' },
+            { name: 'Iceland', code: '+354', flag: '🇮🇸', native: 'Ísland' },
+            { name: 'India', code: '+91', flag: '🇮🇳', native: 'भारत' },
+            { name: 'Indonesia', code: '+62', flag: '🇮🇩', native: 'Indonesia' },
+            { name: 'Iran', code: '+98', flag: '🇮🇷', native: 'ایران' },
+            { name: 'Iraq', code: '+964', flag: '🇮🇶', native: 'العراق' },
+            { name: 'Ireland', code: '+353', flag: '🇮🇪', native: 'Éire' },
+            { name: 'Israel', code: '+972', flag: '🇮🇱', native: 'ישראל' },
+            { name: 'Italy', code: '+39', flag: '🇮🇹', native: 'Italia' },
+            { name: 'Jamaica', code: '+1876', flag: '🇯🇲', native: 'Jamaica' },
+            { name: 'Japan', code: '+81', flag: '🇯🇵', native: '日本' },
+            { name: 'Jordan', code: '+962', flag: '🇯🇴', native: 'الأردن' },
+            { name: 'Kazakhstan', code: '+7', flag: '🇰🇿', native: 'Қазақстан' },
+            { name: 'Kenya', code: '+254', flag: '🇰🇪', native: 'Kenya' },
+            { name: 'Kuwait', code: '+965', flag: '🇰🇼', native: 'الكويت' },
+            { name: 'Latvia', code: '+371', flag: '🇱🇻', native: 'Latvija' },
+            { name: 'Lebanon', code: '+961', flag: '🇱🇧', native: 'لبنان' },
+            { name: 'Libya', code: '+218', flag: '🇱🇾', native: 'ليبيا' },
+            { name: 'Lithuania', code: '+370', flag: '🇱🇹', native: 'Lietuva' },
+            { name: 'Luxembourg', code: '+352', flag: '🇱🇺', native: 'Luxembourg' },
+            { name: 'Malaysia', code: '+60', flag: '🇲🇾', native: 'Malaysia' },
+            { name: 'Mexico', code: '+52', flag: '🇲🇽', native: 'México' },
+            { name: 'Morocco', code: '+212', flag: '🇲🇦', native: 'المغرب' },
+            { name: 'Netherlands', code: '+31', flag: '🇳🇱', native: 'Nederland' },
+            { name: 'New Zealand', code: '+64', flag: '🇳🇿', native: 'New Zealand' },
+            { name: 'Nicaragua', code: '+505', flag: '🇳🇮', native: 'Nicaragua' },
+            { name: 'Nigeria', code: '+234', flag: '🇳🇬', native: 'Nigeria' },
+            { name: 'Norway', code: '+47', flag: '🇳🇴', native: 'Norge' },
+            { name: 'Pakistan', code: '+92', flag: '🇵🇰', native: 'پاکستان' },
+            { name: 'Panama', code: '+507', flag: '🇵🇦', native: 'Panamá' },
+            { name: 'Paraguay', code: '+595', flag: '🇵🇾', native: 'Paraguay' },
+            { name: 'Peru', code: '+51', flag: '🇵🇪', native: 'Perú' },
+            { name: 'Philippines', code: '+63', flag: '🇵🇭', native: 'Philippines' },
+            { name: 'Poland', code: '+48', flag: '🇵🇱', native: 'Polska' },
+            { name: 'Portugal', code: '+351', flag: '🇵🇹', native: 'Portugal' },
+            { name: 'Puerto Rico', code: '+1787', flag: '🇵🇷', native: 'Puerto Rico' },
+            { name: 'Qatar', code: '+974', flag: '🇶🇦', native: 'قطر' },
+            { name: 'Romania', code: '+40', flag: '🇷🇴', native: 'România' },
+            { name: 'Russia', code: '+7', flag: '🇷🇺', native: 'Россия' },
+            { name: 'Saudi Arabia', code: '+966', flag: '🇸🇦', native: 'السعودية' },
+            { name: 'Serbia', code: '+381', flag: '🇷🇸', native: 'Србија' },
+            { name: 'Singapore', code: '+65', flag: '🇸🇬', native: 'Singapore' },
+            { name: 'Slovakia', code: '+421', flag: '🇸🇰', native: 'Slovensko' },
+            { name: 'Slovenia', code: '+386', flag: '🇸🇮', native: 'Slovenija' },
+            { name: 'South Africa', code: '+27', flag: '🇿🇦', native: 'South Africa' },
+            { name: 'South Korea', code: '+82', flag: '🇰🇷', native: '대한민국' },
+            { name: 'Spain', code: '+34', flag: '🇪🇸', native: 'España' },
+            { name: 'Sri Lanka', code: '+94', flag: '🇱🇰', native: 'ශ්‍රී ලංකා' },
+            { name: 'Sweden', code: '+46', flag: '🇸🇪', native: 'Sverige' },
+            { name: 'Switzerland', code: '+41', flag: '🇨🇭', native: 'Schweiz' },
+            { name: 'Syria', code: '+963', flag: '🇸🇾', native: 'سوريا' },
+            { name: 'Taiwan', code: '+886', flag: '🇹🇼', native: '台灣' },
+            { name: 'Thailand', code: '+66', flag: '🇹🇭', native: 'ไทย' },
+            { name: 'Tunisia', code: '+216', flag: '🇹🇳', native: 'تونس' },
+            { name: 'Turkey', code: '+90', flag: '🇹🇷', native: 'Türkiye' },
+            { name: 'Ukraine', code: '+380', flag: '🇺🇦', native: 'Україна' },
+            { name: 'United Arab Emirates', code: '+971', flag: '🇦🇪', native: 'الإمارات' },
+            { name: 'United Kingdom', code: '+44', flag: '🇬🇧', native: 'United Kingdom' },
+            { name: 'Uruguay', code: '+598', flag: '🇺🇾', native: 'Uruguay' },
+            { name: 'Venezuela', code: '+58', flag: '🇻🇪', native: 'Venezuela' },
+            { name: 'Vietnam', code: '+84', flag: '🇻🇳', native: 'Việt Nam' },
+            { name: 'Yemen', code: '+967', flag: '🇾🇪', native: 'اليمن' }
+        ];
+
+        let allCountries = countries;
+        let selectedCountryCode = '+1';
+
+        // Inicializar lista de países
+        function initCountriesList() {
+            displayCountries(allCountries);
+        }
+
+        function displayCountries(countriesToShow) {
+            const container = document.getElementById('countries-list');
+            
+            container.innerHTML = countriesToShow.map(country => `
+                <div onclick="selectCountry('${country.code}', '${country.flag}', '${country.name}')" style="padding: 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f3f4f6; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">
+                    <span style="font-size: 1.5em;">${country.flag}</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 500; color: #333;">${country.name}</div>
+                        <div style="font-size: 0.85em; color: #666;">${country.native}</div>
+                    </div>
+                    <span style="color: #666; font-weight: bold;">${country.code}</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleCountryDropdown() {
+            const dropdown = document.getElementById('country-dropdown');
+            const isVisible = dropdown.style.display === 'block';
+            dropdown.style.display = isVisible ? 'none' : 'block';
+            
+            if (!isVisible) {
+                document.getElementById('country-search').value = '';
+                displayCountries(allCountries);
+            }
+        }
+
+        function selectCountry(code, flag, name) {
+            selectedCountryCode = code;
+            document.getElementById('selected-country').textContent = `${flag} ${code}`;
+            document.getElementById('country-dropdown').style.display = 'none';
+        }
+
+        function filterCountries() {
+            const searchTerm = document.getElementById('country-search').value.toLowerCase();
+            const filtered = allCountries.filter(country => 
+                country.name.toLowerCase().includes(searchTerm) ||
+                country.native.toLowerCase().includes(searchTerm) ||
+                country.code.includes(searchTerm)
+            );
+            displayCountries(filtered);
+        }
+
+        // Cerrar dropdown al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('country-dropdown');
+            const btn = document.getElementById('country-selector-btn');
+            
+            if (dropdown && btn && !dropdown.contains(event.target) && !btn.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        // Inicializar cuando cargue la página
+        window.addEventListener('load', function() {
+            initCountriesList();
+        });
+
+        async function loadContacts() {
+            // Simular carga de contactos
+            const contactsSelect = document.getElementById('contacts-select');
+            contactsSelect.innerHTML = `
+                <option value="contact1">Juan Pérez - +1234567890</option>
+                <option value="contact2">María García - +0987654321</option>
+                <option value="contact3">Carlos López - +1122334455</option>
+            `;
+        }
+
+        function filterContacts() {
+            const searchTerm = document.getElementById('search-contacts').value.toLowerCase();
+            const options = document.querySelectorAll('#contacts-select option');
+            
+            options.forEach(option => {
+                const text = option.textContent.toLowerCase();
+                option.style.display = text.includes(searchTerm) ? 'block' : 'none';
+            });
+        }
+
+        function toggleSelectAllContacts() {
+            const selectAll = document.getElementById('select-all-contacts').checked;
+            const options = document.querySelectorAll('#contacts-select option');
+            
+            options.forEach(option => {
+                option.selected = selectAll;
+            });
+        }
 
         function setupSocketListeners() {
             socket.on('campaign-completed', (data) => {
@@ -431,11 +1060,11 @@
             }
 
             container.innerHTML = groups.map(group => `
-                <div style="padding: 8px; border-bottom: 1px solid #e5e7eb;">
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                        <input type="checkbox" class="group-checkbox" value="${group.group_id}" onchange="updateSelectedGroups()">
-                        <span>${group.name || 'Grupo sin nombre'}</span>
+                <div style="padding: 8px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between;">
+                    <label style="flex: 1; cursor: pointer; text-align: left;" onclick="event.target.nextElementSibling.click()">
+                        ${group.name || 'Grupo sin nombre'}
                     </label>
+                    <input type="checkbox" class="group-checkbox" value="${group.group_id}" onchange="updateSelectedGroups()" style="margin: 0;">
                 </div>
             `).join('');
         }
@@ -598,6 +1227,103 @@
                     alert('Error: ' + result.error);
                 }
             });
+        }
+
+        async function loadScheduledCampaigns() {
+            try {
+                const response = await fetch(`/api/campaigns/scheduled?phone=${phone}`);
+                const data = await response.json();
+                
+                if (data.success && data.campaigns.length > 0) {
+                    displayScheduledCampaigns(data.campaigns);
+                }
+
+                const pausedResponse = await fetch(`/api/campaigns/paused?phone=${phone}`);
+                const pausedData = await pausedResponse.json();
+                
+                if (pausedData.success && pausedData.campaigns.length > 0) {
+                    displayPausedCampaigns(pausedData.campaigns);
+                }
+            } catch (error) {
+                console.error('Error cargando campañas:', error);
+            }
+        }
+
+        function displayScheduledCampaigns(campaigns) {
+            const container = document.getElementById('scheduled-campaigns-list');
+            container.innerHTML = campaigns.map(campaign => `
+                <div style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f9fafb; margin-bottom: 10px; border-radius: 8px;">
+                    <div style="font-weight: bold; margin-bottom: 5px;">${campaign.name}</div>
+                    <div style="color: #666; font-size: 0.9em;">
+                        📅 ${new Date(campaign.scheduled_at).toLocaleString()}
+                    </div>
+                    <div style="color: #666; font-size: 0.9em;">
+                        📊 ${JSON.parse(campaign.group_ids).length} grupos
+                    </div>
+                    <button onclick="deleteCampaign(${campaign.id})" style="margin-top: 10px; padding: 5px 15px; background: #ef4444; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        🗑️ Eliminar
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function displayPausedCampaigns(campaigns) {
+            const container = document.getElementById('paused-campaigns-list');
+            container.innerHTML = campaigns.map(campaign => `
+                <div style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #fef3c7; margin-bottom: 10px; border-radius: 8px;">
+                    <div style="font-weight: bold; margin-bottom: 5px;">${campaign.name}</div>
+                    <div style="color: #666; font-size: 0.9em;">
+                        📊 ${JSON.parse(campaign.group_ids).length} grupos
+                    </div>
+                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                        <button onclick="resumeCampaign(${campaign.id})" style="padding: 5px 15px; background: #10b981; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            ▶️ Reanudar
+                        </button>
+                        <button onclick="deleteCampaign(${campaign.id})" style="padding: 5px 15px; background: #ef4444; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            🗑️ Eliminar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showScheduleCampaignModal() {
+            alert('Funcionalidad de programación en desarrollo');
+        }
+
+        async function deleteCampaign(id) {
+            if (!confirm('¿Eliminar esta campaña?')) return;
+
+            try {
+                const response = await fetch(`/api/campaigns/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Campaña eliminada');
+                    loadScheduledCampaigns();
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function resumeCampaign(id) {
+            try {
+                const response = await fetch(`/api/campaigns/${id}/resume`, { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Campaña reanudada');
+                    loadScheduledCampaigns();
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function loadStatistics() {
+            // Cargar estadísticas desde el servidor
+            console.log('Cargando estadísticas...');
         }
     </script>
 </body>
