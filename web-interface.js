@@ -1,14 +1,14 @@
 /**
  * Interfaz Web para WhatsApp Group Auto-Joiner
+ * Con soporte para múltiples sesiones de WhatsApp
  */
 
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
-const { Client, LocalAuth } = require('whatsapp-web.js');
 const DatabaseService = require('./src/database/DatabaseService');
-const MessageSenderService = require('./src/services/MessageSenderService');
+const WhatsAppSessionManager = require('./src/services/WhatsAppSessionManager');
 
 const app = express();
 const server = http.createServer(app);
@@ -16,18 +16,121 @@ const io = socketIo(server);
 
 const PORT = 3000;
 
-// Cliente de WhatsApp global
-let whatsappClient = null;
-let messageSenderService = null;
-let isWhatsAppReady = false;
+// Gestor de sesiones de WhatsApp
+let sessionManager = null;
 
 // Configurar archivos estáticos
 app.use(express.static('public'));
 app.use(express.json());
 
-// Ruta principal
+// Ruta principal - redirige al login
 app.get('/', (req, res) => {
+    res.redirect('/login');
+});
+
+// Ruta de login
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// Ruta del dashboard (requiere phone)
+app.get('/dashboard', (req, res) => {
+    const phone = req.query.phone;
+    if (!phone) {
+        return res.redirect('/login');
+    }
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// API: Login - Iniciar sesión con número de teléfono
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { phone } = req.body;
+        
+        if (!phone) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Número de teléfono requerido' 
+            });
+        }
+
+        console.log(`\n🔐 Intento de login: ${phone}`);
+
+        // Verificar si ya existe una sesión guardada
+        const hasStored = sessionManager.hasStoredSession(phone);
+        
+        if (hasStored) {
+            console.log(`✅ Sesión encontrada para ${phone}`);
+            // Iniciar sesión existente
+            await sessionManager.getSession(phone);
+            res.json({ 
+                success: true, 
+                needsQR: false,
+                message: 'Sesión encontrada, conectando...' 
+            });
+        } else {
+            console.log(`📱 Primera vez para ${phone}, se requiere QR`);
+            // Crear nueva sesión (mostrará QR)
+            await sessionManager.getSession(phone);
+            res.json({ 
+                success: true, 
+                needsQR: true,
+                message: 'Escanea el código QR' 
+            });
+        }
+        
+    } catch (error) {
+        console.error('❌ Error en login:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+// API: Verificar estado de sesión
+app.get('/api/auth/status', (req, res) => {
+    const phone = req.query.phone;
+    
+    if (!phone) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'Número de teléfono requerido' 
+        });
+    }
+
+    const status = sessionManager.getSessionStatus(phone);
+    res.json({ 
+        success: true, 
+        status: status,
+        phone: phone
+    });
+});
+
+// API: Cerrar sesión
+app.post('/api/auth/logout', async (req, res) => {
+    try {
+        const { phone } = req.body;
+        
+        if (!phone) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Número de teléfono requerido' 
+            });
+        }
+
+        await sessionManager.closeSession(phone);
+        res.json({ 
+            success: true, 
+            message: 'Sesión cerrada correctamente' 
+        });
+        
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
 });
 
 // API: Obtener estadísticas generales
@@ -101,42 +204,38 @@ app.get('/api/groups/failed', (req, res) => {
 // API: Enviar mensaje a un grupo
 app.post('/api/send-message', async (req, res) => {
     try {
-        const { groupId, message } = req.body;
+        const { groupId, message, phone } = req.body;
         
-        if (!groupId || !message) {
+        if (!groupId || !message || !phone) {
             return res.status(400).json({ 
                 success: false, 
-                message: 'Faltan parámetros: groupId y message son requeridos' 
+                message: 'Faltan parámetros: groupId, message y phone son requeridos' 
             });
         }
 
-        // Inicializar WhatsApp si no está listo
-        if (!isWhatsAppReady || !messageSenderService) {
-            console.log('⚠️ WhatsApp no está conectado. Inicializando...');
-            
-            // Inicializar en segundo plano
-            if (!whatsappClient) {
-                initializeWhatsApp();
-            }
-            
+        // Obtener el servicio de mensajes para esta sesión
+        const messageSender = sessionManager.getMessageSender(phone);
+        
+        if (!messageSender) {
             return res.status(503).json({ 
                 success: false, 
-                message: 'WhatsApp se está conectando. Por favor espera unos segundos e intenta nuevamente.' 
+                message: 'WhatsApp no está conectado para este número. Por favor inicia sesión nuevamente.' 
             });
         }
 
         console.log('\n' + '='.repeat(60));
-        console.log('📤 Enviando mensaje a grupo...');
+        console.log(`📤 Enviando mensaje desde ${phone}...`);
         console.log('='.repeat(60));
         console.log(`Grupo ID: ${groupId}`);
         console.log(`Mensaje: ${message.substring(0, 50)}...`);
         console.log('='.repeat(60) + '\n');
 
         // Enviar mensaje usando el servicio
-        const result = await messageSenderService.sendMessageToGroup(groupId, message);
+        const result = await messageSender.sendMessageToGroup(groupId, message);
 
         if (result.success) {
             io.emit('message-sent', { 
+                phone: phone,
                 groupId: groupId,
                 message: 'Mensaje enviado exitosamente' 
             });
@@ -195,67 +294,32 @@ io.on('connection', (socket) => {
     });
 });
 
-// Inicializar cliente de WhatsApp
-function initializeWhatsApp() {
-    console.log('\n🔄 Inicializando cliente de WhatsApp...');
-    
-    whatsappClient = new Client({
-        authStrategy: new LocalAuth({
-            dataPath: './.wwebjs_auth'
-        }),
-        puppeteer: {
-            headless: false,
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-blink-features=AutomationControlled'
-            ]
-        }
-    });
-
-    whatsappClient.on('qr', (qr) => {
-        console.log('\n📱 Escanea el código QR con WhatsApp (si es necesario)');
-        io.emit('whatsapp-qr', { message: 'Escanea el código QR' });
-    });
-
-    whatsappClient.on('authenticated', () => {
-        console.log('✅ WhatsApp autenticado');
-        io.emit('whatsapp-status', { status: 'authenticated' });
-    });
-
-    whatsappClient.on('ready', () => {
-        console.log('✅ WhatsApp conectado y listo para enviar mensajes!');
-        isWhatsAppReady = true;
-        messageSenderService = new MessageSenderService(whatsappClient);
-        io.emit('whatsapp-status', { status: 'ready' });
-    });
-
-    whatsappClient.on('disconnected', (reason) => {
-        console.log('⚠️ WhatsApp desconectado:', reason);
-        isWhatsAppReady = false;
-        io.emit('whatsapp-status', { status: 'disconnected' });
-    });
-
-    whatsappClient.initialize();
-}
-
 // Iniciar servidor
 server.listen(PORT, () => {
     console.log('='.repeat(60));
-    console.log('🌐 Interfaz Web Iniciada');
+    console.log('🌐 Interfaz Web Iniciada - Sistema Multi-Sesión');
     console.log('='.repeat(60));
     console.log(`\n📱 Abre tu navegador en: http://localhost:${PORT}`);
     console.log('\n✨ Funcionalidades disponibles:');
+    console.log('   - Login con número de teléfono');
+    console.log('   - Múltiples sesiones de WhatsApp');
     console.log('   - Ver estadísticas en tiempo real');
-    console.log('   - Lista de grupos exitosos');
     console.log('   - Enviar mensajes a grupos');
-    console.log('   - Gráficos y visualizaciones');
-    console.log('\n⚠️  Para enviar mensajes, WhatsApp se conectará automáticamente cuando sea necesario');
-    console.log('⚠️  Presiona Ctrl+C para detener el servidor\n');
+    console.log('   - Gestión de grupos por usuario');
+    console.log('\n⚠️  Presiona Ctrl+C para detener el servidor\n');
     
-    // NO inicializar WhatsApp automáticamente para evitar conflictos
-    // Se inicializará solo cuando se necesite enviar un mensaje
+    // Inicializar gestor de sesiones
+    sessionManager = new WhatsAppSessionManager(io);
+    console.log('✅ Gestor de sesiones inicializado\n');
+});
+
+// Manejar cierre del servidor
+process.on('SIGINT', async () => {
+    console.log('\n\n🔒 Cerrando servidor...');
+    if (sessionManager) {
+        await sessionManager.closeAllSessions();
+    }
+    process.exit(0);
 });
 
 module.exports = { io };

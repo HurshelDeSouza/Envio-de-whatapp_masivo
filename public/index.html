@@ -441,6 +441,7 @@
         <div class="header">
             <h1>🤖 WhatsApp Group Auto-Joiner</h1>
             <p>Dashboard de Control y Estadísticas</p>
+            <p id="user-phone" style="font-size: 0.9em; color: #667eea; margin-top: 5px;"></p>
             
             <div class="country-selector">
                 <label>🌍 Filtrar por país:</label>
@@ -458,6 +459,9 @@
             <div class="action-buttons">
                 <button class="btn-primary" id="join-btn" onclick="joinGroup()">
                     ➕ Agregar Grupo
+                </button>
+                <button class="btn-primary" onclick="logout()" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                    🚪 Cerrar Sesión
                 </button>
             </div>
             <div id="status-message" class="status-message"></div>
@@ -557,9 +561,25 @@
     <script>
         const socket = io();
         let selectedCountry = 'USA';
+        let userPhone = '';
 
-        // Cargar datos al iniciar
-        loadData();
+        // Obtener número de teléfono de la URL
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            userPhone = urlParams.get('phone');
+            
+            if (!userPhone) {
+                // Si no hay teléfono, redirigir al login
+                window.location.href = '/login';
+                return;
+            }
+            
+            // Mostrar número de teléfono
+            document.getElementById('user-phone').textContent = `📱 Conectado como: ${userPhone}`;
+            
+            // Cargar datos
+            loadData();
+        };
 
         // Actualizar cada 2 segundos para ver cambios más rápido
         setInterval(loadData, 2000);
@@ -662,7 +682,8 @@
                     },
                     body: JSON.stringify({
                         groupId: groupId,
-                        message: message
+                        message: message,
+                        phone: userPhone
                     })
                 });
 
@@ -679,6 +700,13 @@
             } finally {
                 sendBtn.disabled = false;
                 sendBtn.textContent = '📤 Enviar Mensaje';
+            }
+        }
+
+        function logout() {
+            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+                localStorage.removeItem('whatsapp_phone');
+                window.location.href = '/login';
             }
         }
 

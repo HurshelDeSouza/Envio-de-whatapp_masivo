@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - WhatsApp Group Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input[type="tel"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1.1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="tel"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-login {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-login:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .qr-section {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 10px;
+        }
+
+        .qr-section.active {
+            display: block;
+        }
+
+        #qr-code {
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .status-message.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-message.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .help-text {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .phone-format {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">📱</div>
+        <h1>WhatsApp Group Manager</h1>
+        <p>Ingresa tu número de teléfono para continuar</p>
+
+        <div class="input-group">
+            <label for="phone">Número de Teléfono</label>
+            <input 
+                type="tel" 
+                id="phone" 
+                placeholder="+1234567890"
+                maxlength="15"
+            >
+            <div class="phone-format">Formato: +[código país][número] (ej: +573001234567)</div>
+        </div>
+
+        <button class="btn-login" id="login-btn" onclick="login()">
+            Continuar
+        </button>
+
+        <div class="qr-section" id="qr-section">
+            <h3>Escanea el código QR</h3>
+            <p>Abre WhatsApp en tu teléfono y escanea este código</p>
+            <div id="qr-code"></div>
+            <div class="status-message info">
+                <div class="loading"></div>
+                Esperando escaneo del código QR...
+            </div>
+        </div>
+
+        <div id="status-message"></div>
+
+        <div class="help-text">
+            💡 Tu sesión se guardará para no tener que escanear el QR cada vez
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script>
+        const socket = io();
+        let currentPhone = '';
+
+        // Verificar si ya hay una sesión activa
+        window.onload = () => {
+            const savedPhone = localStorage.getItem('whatsapp_phone');
+            if (savedPhone) {
+                document.getElementById('phone').value = savedPhone;
+            }
+        };
+
+        async function login() {
+            const phone = document.getElementById('phone').value.trim();
+            
+            if (!phone) {
+                showStatus('error', 'Por favor ingresa tu número de teléfono');
+                return;
+            }
+
+            // Validar formato básico
+            if (!phone.startsWith('+') || phone.length < 10) {
+                showStatus('error', 'Formato inválido. Debe comenzar con + y el código de país');
+                return;
+            }
+
+            currentPhone = phone;
+            const loginBtn = document.getElementById('login-btn');
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<div class="loading"></div> Conectando...';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ phone: phone })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.needsQR) {
+                        showStatus('info', 'Primera vez con este número. Escanea el código QR.');
+                        // El QR se mostrará via socket
+                    } else {
+                        showStatus('success', '✅ Sesión encontrada. Redirigiendo al dashboard...');
+                        // Redirigir automáticamente después de 2 segundos
+                        setTimeout(() => {
+                            goToDashboard();
+                        }, 2000);
+                    }
+                } else {
+                    showStatus('error', result.message);
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Continuar';
+                }
+            } catch (error) {
+                showStatus('error', 'Error al conectar: ' + error.message);
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Continuar';
+            }
+        }
+
+        // Escuchar eventos de WhatsApp
+        socket.on('whatsapp-qr', (data) => {
+            if (data.phone === currentPhone) {
+                showQR(data.qr);
+            }
+        });
+
+        socket.on('whatsapp-authenticated', (data) => {
+            if (data.phone === currentPhone) {
+                showStatus('success', '✅ Autenticado correctamente');
+            }
+        });
+
+        socket.on('whatsapp-ready', (data) => {
+            if (data.phone === currentPhone) {
+                showStatus('success', '✅ Conectado! Redirigiendo...');
+                localStorage.setItem('whatsapp_phone', currentPhone);
+                setTimeout(() => {
+                    window.location.href = '/dashboard?phone=' + encodeURIComponent(currentPhone);
+                }, 1500);
+            }
+        });
+
+        socket.on('whatsapp-error', (data) => {
+            if (data.phone === currentPhone) {
+                showStatus('error', '❌ Error: ' + data.message);
+                document.getElementById('login-btn').disabled = false;
+                document.getElementById('login-btn').textContent = 'Continuar';
+            }
+        });
+
+        function showQR(qrData) {
+            const qrSection = document.getElementById('qr-section');
+            const qrCode = document.getElementById('qr-code');
+            
+            qrCode.innerHTML = '';
+            qrSection.classList.add('active');
+            
+            new QRCode(qrCode, {
+                text: qrData,
+                width: 256,
+                height: 256,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function showStatus(type, message) {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.className = 'status-message ' + type;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+        }
+
+        function goToDashboard() {
+            localStorage.setItem('whatsapp_phone', currentPhone);
+            window.location.href = '/dashboard?phone=' + encodeURIComponent(currentPhone);
+        }
+
+        // Permitir enter para login
+        document.getElementById('phone').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+    </script>
+</body>
+</html>

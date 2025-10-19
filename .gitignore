@@ -4,6 +4,7 @@ node_modules/
 # Autenticación de WhatsApp (IMPORTANTE: No subir esto)
 .wwebjs_auth/
 .wwebjs_cache/
+.wwebjs_sessions/
 
 # Archivos de configuración sensibles
 numeros.json
@@ -27,3 +28,12 @@ package-lock.json
 
 # Archivos de imagen QR generados
 whatsapp-qr.png
+
+# Base de datos SQLite
+database/*.db
+database/*.db-shm
+database/*.db-wal
+
+# Archivos de verificación temporal
+check-db.js
+verification-results-*.json
