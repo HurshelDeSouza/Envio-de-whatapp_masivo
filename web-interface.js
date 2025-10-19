@@ -11,6 +11,9 @@ const DatabaseService = require('./src/database/DatabaseService');
 const UserService = require('./src/database/UserService');
 const WhatsAppSessionManager = require('./src/services/WhatsAppSessionManager');
 const GroupPermissionChecker = require('./src/services/GroupPermissionChecker');
+const TemplateService = require('./src/database/TemplateService');
+const CampaignService = require('./src/database/CampaignService');
+const MessageCampaignService = require('./src/services/MessageCampaignService');
 
 const app = express();
 const server = http.createServer(app);
@@ -57,6 +60,15 @@ app.get('/dashboard', (req, res) => {
         return res.redirect('/auth-login');
     }
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Ruta de envío de mensajes
+app.get('/send-messages', (req, res) => {
+    const phone = req.query.phone;
+    if (!phone) {
+        return res.redirect('/auth-login');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'send-messages.html'));
 });
 
 // API: Login de usuario (usuario y contraseña)
@@ -589,6 +601,220 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('❌ Cliente desconectado');
     });
+});
+
+// ============================================================
+// APIs DE TEMPLATES
+// ============================================================
+
+// API: Obtener todos los templates
+app.get('/api/templates', (req, res) => {
+    try {
+        const templateService = new TemplateService();
+        const templates = templateService.getAllTemplates();
+        templateService.close();
+        
+        res.json({ success: true, templates });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// API: Crear template
+app.post('/api/templates', (req, res) => {
+    try {
+        const { name, message, category } = req.body;
+        
+        const templateService = new TemplateService();
+        const result = templateService.createTemplate(name, message, category);
+        templateService.close();
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// API: Actualizar template
+app.put('/api/templates/:id', (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, message, category } = req.body;
+        
+        const templateService = new TemplateService();
+        const result = templateService.updateTemplate(id, name, message, category);
+        templateService.close();
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// API: Eliminar template
+app.delete('/api/templates/:id', (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const templateService = new TemplateService();
+        const result = templateService.deleteTemplate(id);
+        templateService.close();
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// APIs DE CAMPAÑAS
+// ============================================================
+
+// API: Crear campaña
+app.post('/api/campaigns', (req, res) => {
+    try {
+        const campaignService = new CampaignService();
+        const result = campaignService.createCampaign(req.body);
+        campaignService.close();
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// API: Obtener todas las campañas
+app.get('/api/campaigns', (req, res) => {
+    try {
+        const { phone } = req.query;
+        
+        const campaignService = new CampaignService();
+        const campaigns = campaignService.getAllCampaigns(phone);
+        campaignService.close();
+        
+        res.json({ success: true, campaigns });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// API: Obtener campañas programadas
+app.get('/api/campaigns/scheduled', (req, res) => {
+    try {
+        const campaignService = new CampaignService();
+        const campaigns = campaignService.getScheduledCampaigns();
+        campaignService.close();
+        
+        res.json({ success: true, campaigns });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// API: Obtener campañas pausadas
+app.get('/api/campaigns/paused', (req, res) => {
+    try {
+        const { phone } = req.query;
+        
+        const campaignService = new CampaignService();
+        const campaigns = campaignService.getPausedCampaigns(phone);
+        campaignService.close();
+        
+        res.json({ success: true, campaigns });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// API: Ejecutar campaña con configuración avanzada
+app.post('/api/campaigns/send', async (req, res) => {
+    try {
+        const { phone, groupIds, message, config } = req.body;
+        
+        if (!phone || !groupIds || !message) {
+            return res.status(400).json({
+                success: false,
+                message: 'Faltan parámetros requeridos'
+            });
+        }
+
+        // Obtener sesión de WhatsApp
+        const session = await sessionManager.getSession(phone);
+        
+        if (!session || session.status !== 'ready') {
+            return res.status(503).json({
+                success: false,
+                message: 'WhatsApp no está conectado'
+            });
+        }
+
+        // Crear servicio de campaña
+        const campaignService = new MessageCampaignService(session.client, phone);
+        
+        // Ejecutar campaña en segundo plano
+        campaignService.sendCampaign({
+            groupIds,
+            message,
+            ...config
+        }).then(results => {
+            io.emit('campaign-completed', { phone, results });
+        }).catch(error => {
+            io.emit('campaign-error', { phone, error: error.message });
+        });
+
+        res.json({
+            success: true,
+            message: 'Campaña iniciada'
+        });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// API: Pausar campaña
+app.post('/api/campaigns/:id/pause', (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const campaignService = new CampaignService();
+        const result = campaignService.updateCampaignStatus(id, 'paused');
+        campaignService.close();
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// API: Reanudar campaña
+app.post('/api/campaigns/:id/resume', (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const campaignService = new CampaignService();
+        const result = campaignService.updateCampaignStatus(id, 'running');
+        campaignService.close();
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// API: Eliminar campaña
+app.delete('/api/campaigns/:id', (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const campaignService = new CampaignService();
+        const result = campaignService.deleteCampaign(id);
+        campaignService.close();
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
 });
 
 // Iniciar servidor

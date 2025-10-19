@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Mensajes - WhatsApp Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 1.8em;
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group select,
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .number-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .number-input input {
+            flex: 1;
+        }
+
+        .number-input span {
+            color: #666;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .template-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .template-item {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .template-item:hover {
+            background: #f3f4f6;
+        }
+
+        .template-item:last-child {
+            border-bottom: none;
+        }
+
+        .template-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .template-preview {
+            color: #666;
+            font-size: 0.9em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
+        .status-message.info {
+            background: #dbeafe;
+            color: #1e40af;
+            display: block;
+        }
+
+        .campaign-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .campaign-controls button {
+            flex: 1;
+        }
+
+        .btn-pause {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .options-section {
+            border-top: 2px solid #e5e7eb;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        .options-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📤 Enviar Mensajes Masivos</h1>
+            <button class="btn-back" onclick="goBack()">← Volver al Dashboard</button>
+        </div>
+
+        <div class="main-content">
+            <!-- Panel Principal -->
+            <div class="card">
+                <h2>Configurar Mensaje</h2>
+
+                <div class="form-group">
+                    <label>Filtrar por País</label>
+                    <select id="country-select" onchange="loadGroups()">
+                        <option value="USA">🇺🇸 USA</option>
+                        <option value="COLOMBIA">🇨🇴 Colombia</option>
+                        <option value="VENEZUELA">🇻🇪 Venezuela</option>
+                        <option value="ARGENTINA">🇦🇷 Argentina</option>
+                        <option value="MEXICO">🇲🇽 México</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="select-all" onchange="toggleSelectAll()">
+                        Seleccionar Todos (<span id="group-count">0</span> grupos)
+                    </label>
+                    <div id="groups-list" style="max-height: 200px; overflow-y: auto; border: 2px solid #e5e7eb; border-radius: 8px; padding: 10px;">
+                        <p style="color: #666;">Cargando grupos...</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Mensaje</label>
+                    <textarea id="message" placeholder="Escribe tu mensaje aquí..."></textarea>
+                </div>
+
+                <div class="options-section">
+                    <h3>⚙️ Opciones Avanzadas</h3>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enable-delays" checked>
+                        <label for="enable-delays">Agregar intervalos de tiempo entre mensajes</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Delay entre mensajes (segundos)</label>
+                        <div class="number-input">
+                            <input type="number" id="delay-min" value="5" min="1" max="60">
+                            <span>a</span>
+                            <input type="number" id="delay-max" value="15" min="1" max="60">
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enable-batches" checked>
+                        <label for="enable-batches">Agregar lotes (Recomendado)</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tamaño de lote</label>
+                        <input type="number" id="batch-size" value="50" min="10" max="200">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pausa entre lotes (minutos)</label>
+                        <input type="number" id="batch-delay" value="30" min="5" max="120">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pausa cada X mensajes</label>
+                        <input type="number" id="pause-every" value="50" min="10" max="100">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Duración de pausa (minutos)</label>
+                        <input type="number" id="pause-duration" value="10" min="5" max="60">
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="sendCampaign()">
+                    📤 Enviar Mensajes
+                </button>
+
+                <div class="campaign-controls" id="campaign-controls" style="display: none;">
+                    <button class="btn-primary btn-pause" onclick="pauseCampaign()">⏸️ Pausar</button>
+                    <button class="btn-primary btn-stop" onclick="stopCampaign()">🛑 Detener</button>
+                </div>
+
+                <div id="status-message" class="status-message"></div>
+            </div>
+
+            <!-- Panel Lateral -->
+            <div>
+                <div class="card">
+                    <h2>📝 Templates</h2>
+                    <div class="template-list" id="templates-list">
+                        <p style="color: #666;">Cargando templates...</p>
+                    </div>
+                    <button class="btn-secondary" onclick="showNewTemplateModal()">
+                        ➕ Nuevo Template
+                    </button>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h2>📊 Estadísticas</h2>
+                    <div id="campaign-stats">
+                        <p><strong>Total grupos:</strong> <span id="stat-total">0</span></p>
+                        <p><strong>Enviados:</strong> <span id="stat-sent">0</span></p>
+                        <p><strong>Fallidos:</strong> <span id="stat-failed">0</span></p>
+                        <p><strong>Progreso:</strong> <span id="stat-progress">0%</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let selectedGroups = [];
+        let allGroups = [];
+        let phone = '';
+        let campaignRunning = false;
+
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            phone = urlParams.get('phone');
+            
+            if (!phone) {
+                alert('Número de teléfono no especificado');
+                window.location.href = '/';
+                return;
+            }
+
+            loadGroups();
+            loadTemplates();
+            setupSocketListeners();
+        };
+
+        function setupSocketListeners() {
+            socket.on('campaign-completed', (data) => {
+                if (data.phone === phone) {
+                    showStatus('success', `✅ Campaña completada! Enviados: ${data.results.sent}, Fallidos: ${data.results.failed}`);
+                    campaignRunning = false;
+                    document.getElementById('campaign-controls').style.display = 'none';
+                }
+            });
+
+            socket.on('campaign-error', (data) => {
+                if (data.phone === phone) {
+                    showStatus('error', `❌ Error en campaña: ${data.error}`);
+                    campaignRunning = false;
+                    document.getElementById('campaign-controls').style.display = 'none';
+                }
+            });
+        }
+
+        async function loadGroups() {
+            const country = document.getElementById('country-select').value;
+            
+            try {
+                const response = await fetch(`/api/groups/successful?country=${country}`);
+                const groups = await response.json();
+                
+                allGroups = groups;
+                displayGroups(groups);
+            } catch (error) {
+                console.error('Error cargando grupos:', error);
+            }
+        }
+
+        function displayGroups(groups) {
+            const container = document.getElementById('groups-list');
+            document.getElementById('group-count').textContent = groups.length;
+            
+            if (groups.length === 0) {
+                container.innerHTML = '<p style="color: #666;">No hay grupos disponibles</p>';
+                return;
+            }
+
+            container.innerHTML = groups.map(group => `
+                <div style="padding: 8px; border-bottom: 1px solid #e5e7eb;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" class="group-checkbox" value="${group.group_id}" onchange="updateSelectedGroups()">
+                        <span>${group.name || 'Grupo sin nombre'}</span>
+                    </label>
+                </div>
+            `).join('');
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('select-all').checked;
+            const checkboxes = document.querySelectorAll('.group-checkbox');
+            
+            checkboxes.forEach(cb => {
+                cb.checked = selectAll;
+            });
+            
+            updateSelectedGroups();
+        }
+
+        function updateSelectedGroups() {
+            const checkboxes = document.querySelectorAll('.group-checkbox:checked');
+            selectedGroups = Array.from(checkboxes).map(cb => cb.value);
+            console.log('Grupos seleccionados:', selectedGroups.length);
+        }
+
+        async function loadTemplates() {
+            try {
+                const response = await fetch('/api/templates');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayTemplates(data.templates);
+                }
+            } catch (error) {
+                console.error('Error cargando templates:', error);
+            }
+        }
+
+        function displayTemplates(templates) {
+            const container = document.getElementById('templates-list');
+            
+            if (templates.length === 0) {
+                container.innerHTML = '<p style="color: #666;">No hay templates</p>';
+                return;
+            }
+
+            container.innerHTML = templates.map(template => `
+                <div class="template-item" onclick="useTemplate(${template.id})">
+                    <div class="template-name">${template.name}</div>
+                    <div class="template-preview">${template.message}</div>
+                </div>
+            `).join('');
+        }
+
+        function useTemplate(templateId) {
+            fetch(`/api/templates`)
+                .then(res => res.json())
+                .then(data => {
+                    const template = data.templates.find(t => t.id === templateId);
+                    if (template) {
+                        document.getElementById('message').value = template.message;
+                    }
+                });
+        }
+
+        async function sendCampaign() {
+            if (selectedGroups.length === 0) {
+                showStatus('error', 'Por favor selecciona al menos un grupo');
+                return;
+            }
+
+            const message = document.getElementById('message').value.trim();
+            if (!message) {
+                showStatus('error', 'Por favor escribe un mensaje');
+                return;
+            }
+
+            const config = {
+                delays: {
+                    min: parseInt(document.getElementById('delay-min').value),
+                    max: parseInt(document.getElementById('delay-max').value)
+                },
+                batchSize: parseInt(document.getElementById('batch-size').value),
+                batchDelay: parseInt(document.getElementById('batch-delay').value),
+                pauseEvery: parseInt(document.getElementById('pause-every').value),
+                pauseDuration: parseInt(document.getElementById('pause-duration').value)
+            };
+
+            try {
+                showStatus('info', '🚀 Iniciando campaña...');
+                campaignRunning = true;
+                document.getElementById('campaign-controls').style.display = 'flex';
+
+                const response = await fetch('/api/campaigns/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phone,
+                        groupIds: selectedGroups,
+                        message,
+                        config
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus('info', '📤 Campaña en progreso...');
+                } else {
+                    showStatus('error', result.message);
+                    campaignRunning = false;
+                    document.getElementById('campaign-controls').style.display = 'none';
+                }
+            } catch (error) {
+                showStatus('error', 'Error: ' + error.message);
+                campaignRunning = false;
+                document.getElementById('campaign-controls').style.display = 'none';
+            }
+        }
+
+        function pauseCampaign() {
+            showStatus('info', '⏸️ Pausando campaña...');
+            // Implementar lógica de pausa
+        }
+
+        function stopCampaign() {
+            if (confirm('¿Estás seguro de que quieres detener la campaña?')) {
+                showStatus('info', '🛑 Deteniendo campaña...');
+                campaignRunning = false;
+                document.getElementById('campaign-controls').style.display = 'none';
+            }
+        }
+
+        function showStatus(type, message) {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.className = 'status-message ' + type;
+            statusDiv.textContent = message;
+        }
+
+        function goBack() {
+            window.location.href = `/dashboard?phone=${encodeURIComponent(phone)}`;
+        }
+
+        function showNewTemplateModal() {
+            const name = prompt('Nombre del template:');
+            if (!name) return;
+
+            const message = prompt('Mensaje del template:');
+            if (!message) return;
+
+            const category = prompt('Categoría (opcional):', 'general');
+
+            fetch('/api/templates', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, message, category: category || 'general' })
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    alert('Template creado exitosamente');
+                    loadTemplates();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
