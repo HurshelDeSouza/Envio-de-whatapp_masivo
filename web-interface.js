@@ -110,10 +110,18 @@ app.post('/api/send-message', async (req, res) => {
             });
         }
 
+        // Inicializar WhatsApp si no está listo
         if (!isWhatsAppReady || !messageSenderService) {
+            console.log('⚠️ WhatsApp no está conectado. Inicializando...');
+            
+            // Inicializar en segundo plano
+            if (!whatsappClient) {
+                initializeWhatsApp();
+            }
+            
             return res.status(503).json({ 
                 success: false, 
-                message: 'WhatsApp no está conectado. Por favor espera a que se conecte.' 
+                message: 'WhatsApp se está conectando. Por favor espera unos segundos e intenta nuevamente.' 
             });
         }
 
@@ -243,10 +251,11 @@ server.listen(PORT, () => {
     console.log('   - Lista de grupos exitosos');
     console.log('   - Enviar mensajes a grupos');
     console.log('   - Gráficos y visualizaciones');
-    console.log('\n⚠️  Presiona Ctrl+C para detener el servidor\n');
+    console.log('\n⚠️  Para enviar mensajes, WhatsApp se conectará automáticamente cuando sea necesario');
+    console.log('⚠️  Presiona Ctrl+C para detener el servidor\n');
     
-    // Inicializar WhatsApp después de que el servidor esté listo
-    initializeWhatsApp();
+    // NO inicializar WhatsApp automáticamente para evitar conflictos
+    // Se inicializará solo cuando se necesite enviar un mensaje
 });
 
 module.exports = { io };
