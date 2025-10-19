@@ -8,6 +8,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
 const DatabaseService = require('./src/database/DatabaseService');
+const UserService = require('./src/database/UserService');
 const WhatsAppSessionManager = require('./src/services/WhatsAppSessionManager');
 const GroupPermissionChecker = require('./src/services/GroupPermissionChecker');
 
@@ -24,23 +25,171 @@ let sessionManager = null;
 app.use(express.static('public'));
 app.use(express.json());
 
-// Ruta principal - redirige al login
+// Ruta principal - redirige al login de usuario
 app.get('/', (req, res) => {
-    res.redirect('/login');
+    res.redirect('/auth-login');
 });
 
-// Ruta de login
+// Ruta de login de usuario
+app.get('/auth-login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'auth-login.html'));
+});
+
+// Ruta de selector de números
+app.get('/phone-selector', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'phone-selector.html'));
+});
+
+// Ruta de login de WhatsApp (con número) - Ahora maneja QR si es necesario
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// Ruta para mostrar QR de un número nuevo
+app.get('/qr-scan', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'qr-scan.html'));
 });
 
 // Ruta del dashboard (requiere phone)
 app.get('/dashboard', (req, res) => {
     const phone = req.query.phone;
     if (!phone) {
-        return res.redirect('/login');
+        return res.redirect('/auth-login');
     }
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// API: Login de usuario (usuario y contraseña)
+app.post('/api/auth/user-login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        
+        console.log('\n' + '='.repeat(60));
+        console.log('👤 LOGIN DE USUARIO');
+        console.log('='.repeat(60));
+        console.log(`Usuario: ${username}`);
+        
+        if (!username || !password) {
+            console.log('❌ Faltan credenciales');
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Usuario y contraseña requeridos' 
+            });
+        }
+
+        const userService = new UserService();
+        const user = userService.verifyUser(username, password);
+        userService.close();
+
+        if (user) {
+            console.log('✅ Login exitoso');
+            console.log('='.repeat(60) + '\n');
+            // Generar token simple (en producción usar JWT)
+            const token = Buffer.from(`${username}:${Date.now()}`).toString('base64');
+            res.json({ 
+                success: true, 
+                token: token,
+                username: user.username
+            });
+        } else {
+            console.log('❌ Credenciales inválidas');
+            console.log('='.repeat(60) + '\n');
+            res.status(401).json({ 
+                success: false, 
+                message: 'Usuario o contraseña incorrectos' 
+            });
+        }
+        
+    } catch (error) {
+        console.error('❌ Error en login de usuario:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+// API: Listar números de un usuario
+app.get('/api/phones/list', (req, res) => {
+    try {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'No autorizado' 
+            });
+        }
+
+        const username = Buffer.from(token, 'base64').toString().split(':')[0];
+        
+        const userService = new UserService();
+        const phones = userService.getUserPhones(username);
+        userService.close();
+
+        // Verificar si cada número tiene sesión guardada en el sistema
+        const phonesWithStatus = phones.map(phone => ({
+            ...phone,
+            hasSession: sessionManager.hasStoredSession(phone.number)
+        }));
+
+        res.json({ 
+            success: true, 
+            phones: phonesWithStatus 
+        });
+        
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+// API: Agregar número a un usuario
+app.post('/api/phones/add', async (req, res) => {
+    try {
+        const { phone, username } = req.body;
+        
+        console.log('\n' + '='.repeat(60));
+        console.log('➕ AGREGAR NÚMERO');
+        console.log('='.repeat(60));
+        console.log(`Usuario: ${username}`);
+        console.log(`Número: ${phone}`);
+        
+        if (!phone || !username) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Faltan parámetros' 
+            });
+        }
+
+        const userService = new UserService();
+        const added = userService.addPhoneToUser(username, phone);
+        userService.close();
+
+        if (added) {
+            console.log('✅ Número agregado exitosamente');
+            console.log('='.repeat(60) + '\n');
+            res.json({ 
+                success: true, 
+                message: 'Número agregado exitosamente' 
+            });
+        } else {
+            console.log('❌ Error al agregar número');
+            console.log('='.repeat(60) + '\n');
+            res.status(400).json({ 
+                success: false, 
+                message: 'No se pudo agregar el número (puede que ya exista)' 
+            });
+        }
+        
+    } catch (error) {
+        console.error('❌ Error:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
 });
 
 // API: Login - Iniciar sesión con número de teléfono
@@ -99,6 +248,25 @@ app.post('/api/auth/login', async (req, res) => {
             message: error.message 
         });
     }
+});
+
+// API: Verificar si un número tiene sesión guardada
+app.get('/api/check-session', (req, res) => {
+    const phone = req.query.phone;
+    
+    if (!phone) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'Número de teléfono requerido' 
+        });
+    }
+
+    const hasSession = sessionManager.hasStoredSession(phone);
+    res.json({ 
+        success: true, 
+        hasSession: hasSession,
+        phone: phone
+    });
 });
 
 // API: Verificar estado de sesión

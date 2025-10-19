@@ -84,13 +84,30 @@ class WhatsAppSessionManager {
      * Configura los eventos del cliente de WhatsApp
      */
     setupClientEvents(phone, client) {
-        client.on('qr', (qr) => {
+        client.on('qr', async (qr) => {
             console.log(`📱 QR generado para ${phone}`);
             const session = this.sessions.get(phone);
             if (session) {
                 session.status = 'qr_ready';
             }
-            this.io.emit('whatsapp-qr', { phone, qr });
+            
+            // Convertir QR a imagen base64
+            const QRCode = require('qrcode');
+            try {
+                const qrImage = await QRCode.toDataURL(qr, {
+                    width: 300,
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#ffffff'
+                    }
+                });
+                console.log(`✅ QR convertido a imagen para ${phone}`);
+                this.io.emit('whatsapp-qr', { phone, qr: qrImage });
+            } catch (error) {
+                console.error('Error generando QR:', error);
+                this.io.emit('whatsapp-qr', { phone, qr });
+            }
         });
 
         client.on('authenticated', () => {
@@ -111,6 +128,13 @@ class WhatsAppSessionManager {
                 const MessageSenderService = require('./MessageSenderService');
                 session.messageSender = new MessageSenderService(client);
             }
+            
+            // Actualizar estado en la base de datos
+            const UserService = require('../database/UserService');
+            const userService = new UserService();
+            userService.updatePhoneSession(phone, true);
+            userService.close();
+            
             this.io.emit('whatsapp-ready', { phone });
         });
 

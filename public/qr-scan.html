@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escanear QR - WhatsApp Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .qr-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        .phone-display {
+            color: #667eea;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .instructions {
+            background: #f0f9ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+            border-radius: 8px;
+        }
+
+        .instructions h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #666;
+        }
+
+        .instructions li {
+            margin: 8px 0;
+        }
+
+        .qr-box {
+            background: #f9fafb;
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #qr-code {
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #qr-code canvas {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .loading {
+            color: #667eea;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .status-message.info {
+            background: #dbeafe;
+            color: #1e40af;
+            display: block;
+        }
+
+        .status-message.success {
+            background: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
+        .btn-back {
+            margin-top: 20px;
+            background: #e5e7eb;
+            color: #333;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-back:hover {
+            background: #d1d5db;
+        }
+    </style>
+</head>
+<body>
+    <div class="qr-container">
+        <div class="logo">📱</div>
+        <h1>Conectar WhatsApp</h1>
+        <div class="phone-display" id="phone-display">Cargando...</div>
+
+        <div class="instructions">
+            <h3>💡 Instrucciones:</h3>
+            <ol>
+                <li>Abre WhatsApp en tu teléfono</li>
+                <li>Ve a <strong>Configuración</strong> → <strong>Dispositivos vinculados</strong></li>
+                <li>Toca en <strong>Vincular un dispositivo</strong></li>
+                <li>Escanea el código QR que aparecerá abajo</li>
+            </ol>
+        </div>
+
+        <div class="qr-box">
+            <div class="spinner"></div>
+            <div class="loading">Generando código QR...</div>
+            <div id="qr-code"></div>
+        </div>
+
+        <div id="status-message" class="status-message"></div>
+
+        <button class="btn-back" onclick="goBack()">← Volver</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io({
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionAttempts: 10,
+            transports: ['websocket', 'polling']
+        });
+        let phone = '';
+        let loginAttempted = false;
+
+        window.onload = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            phone = urlParams.get('phone');
+            
+            if (!phone) {
+                showStatus('error', 'Número de teléfono no especificado');
+                return;
+            }
+
+            document.getElementById('phone-display').textContent = `📱 ${phone}`;
+
+            // Configurar listeners primero
+            listenForQR();
+
+            // Esperar un momento para que el socket se estabilice
+            setTimeout(async () => {
+                await startWhatsAppLogin();
+            }, 500);
+        };
+
+        async function startWhatsAppLogin() {
+            if (loginAttempted) return;
+            loginAttempted = true;
+
+            console.log('Iniciando login de WhatsApp para:', phone);
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ phone })
+                });
+
+                const result = await response.json();
+                console.log('Respuesta del servidor:', result);
+
+                if (result.success) {
+                    if (result.needsQR) {
+                        console.log('✅ Esperando código QR...');
+                    } else {
+                        console.log('✅ Sesión encontrada, esperando conexión...');
+                    }
+                } else {
+                    showStatus('error', result.message);
+                }
+            } catch (error) {
+                console.error('Error en login:', error);
+                showStatus('error', 'Error al conectar: ' + error.message);
+            }
+        }
+
+        function listenForQR() {
+            console.log('📡 Configurando listeners para:', phone);
+            
+            // Escuchar evento de QR desde el servidor
+            socket.on('whatsapp-qr', (data) => {
+                console.log('📱 Evento QR recibido');
+                console.log('Teléfono del QR:', data.phone);
+                console.log('Teléfono actual:', phone);
+                
+                // Normalizar números para comparación
+                const normalizedDataPhone = data.phone.replace(/\D/g, '');
+                const normalizedPhone = phone.replace(/\D/g, '');
+                
+                console.log('Comparación:', normalizedDataPhone, '===', normalizedPhone);
+                
+                if (normalizedDataPhone === normalizedPhone) {
+                    console.log('✅ QR es para este número, mostrando imagen...');
+                    document.querySelector('.spinner').style.display = 'none';
+                    document.querySelector('.loading').style.display = 'none';
+                    
+                    const qrContainer = document.getElementById('qr-code');
+                    qrContainer.innerHTML = ''; // Limpiar QR anterior
+                    
+                    // Crear elemento de imagen
+                    const img = document.createElement('img');
+                    img.src = data.qr;
+                    img.alt = 'Código QR de WhatsApp';
+                    img.style.maxWidth = '300px';
+                    img.style.borderRadius = '10px';
+                    img.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
+                    
+                    qrContainer.appendChild(img);
+                    qrContainer.style.display = 'flex';
+                    
+                    console.log('✅ QR imagen mostrada exitosamente');
+                } else {
+                    console.log('⚠️ QR no es para este número, ignorando');
+                }
+            });
+
+            // Escuchar cuando se autentique
+            socket.on('whatsapp-authenticated', (data) => {
+                if (data.phone === phone || data.phone === '+' + phone.replace(/\+/g, '')) {
+                    console.log('✅ Autenticado, esperando conexión...');
+                    showStatus('info', '✅ Autenticado! Conectando...');
+                }
+            });
+
+            // Escuchar cuando se conecte exitosamente
+            socket.on('whatsapp-ready', (data) => {
+                if (data.phone === phone || data.phone === '+' + phone.replace(/\+/g, '')) {
+                    console.log('✅ WhatsApp listo, redirigiendo...');
+                    showStatus('success', '✅ ¡Conectado exitosamente! Redirigiendo...');
+                    setTimeout(() => {
+                        window.location.href = `/dashboard?phone=${encodeURIComponent(phone)}`;
+                    }, 2000);
+                }
+            });
+
+            // Escuchar errores
+            socket.on('whatsapp-error', (data) => {
+                if (data.phone === phone || data.phone === '+' + phone.replace(/\+/g, '')) {
+                    console.error('❌ Error de WhatsApp:', data.message);
+                    showStatus('error', '❌ Error: ' + data.message);
+                }
+            });
+
+            // Debug: escuchar desconexiones
+            socket.on('disconnect', () => {
+                console.warn('⚠️ Socket desconectado');
+            });
+
+            socket.on('reconnect', () => {
+                console.log('🔄 Socket reconectado');
+            });
+        }
+
+        function showStatus(type, message) {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.className = 'status-message ' + type;
+            statusDiv.textContent = message;
+        }
+
+        function goBack() {
+            window.location.href = '/phone-selector';
+        }
+    </script>
+</body>
+</html>
