@@ -7,7 +7,8 @@
     "start": "node index-group-joiner.js",
     "send-messages": "node index.js",
     "api": "node api-server.js",
-    "join-groups": "node join-groups.js"
+    "join-groups": "node join-groups.js",
+    "web": "node web-interface.js"
   },
   "keywords": [
     "whatsapp",
@@ -18,12 +19,14 @@
   "dependencies": {
     "better-sqlite3": "^12.4.1",
     "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
     "express": "^4.21.2",
     "googleapis": "^164.0.0",
     "qr-encode": "^0.3.0",
     "qrcode": "^1.5.4",
     "qrcode-generator": "^2.0.4",
     "qrcode-terminal": "^0.12.0",
+    "socket.io": "^4.8.1",
     "whatsapp-web.js": "^1.34.1"
   }
 }
