@@ -9,6 +9,7 @@ const socketIo = require('socket.io');
 const path = require('path');
 const DatabaseService = require('./src/database/DatabaseService');
 const WhatsAppSessionManager = require('./src/services/WhatsAppSessionManager');
+const GroupPermissionChecker = require('./src/services/GroupPermissionChecker');
 
 const app = express();
 const server = http.createServer(app);
@@ -126,6 +127,95 @@ app.post('/api/auth/logout', async (req, res) => {
         });
         
     } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+// API: Verificar permisos de un grupo
+app.post('/api/check-group-permissions', async (req, res) => {
+    try {
+        const { groupId, phone } = req.body;
+        
+        if (!groupId || !phone) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Faltan parámetros: groupId y phone son requeridos' 
+            });
+        }
+
+        // Obtener la sesión del usuario
+        const session = await sessionManager.getSession(phone);
+        
+        if (!session || session.status !== 'ready') {
+            return res.status(503).json({ 
+                success: false, 
+                message: 'WhatsApp no está conectado para este número' 
+            });
+        }
+
+        // Verificar permisos
+        const checker = new GroupPermissionChecker(session.client);
+        const permissions = await checker.checkGroupPermissions(groupId);
+
+        res.json({ 
+            success: true, 
+            permissions: permissions 
+        });
+        
+    } catch (error) {
+        console.error('❌ Error al verificar permisos:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+// API: Verificar permisos de múltiples grupos
+app.post('/api/check-multiple-permissions', async (req, res) => {
+    try {
+        const { groupIds, phone } = req.body;
+        
+        if (!groupIds || !phone || !Array.isArray(groupIds)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Faltan parámetros: groupIds (array) y phone son requeridos' 
+            });
+        }
+
+        // Obtener la sesión del usuario
+        const session = await sessionManager.getSession(phone);
+        
+        if (!session || session.status !== 'ready') {
+            return res.status(503).json({ 
+                success: false, 
+                message: 'WhatsApp no está conectado para este número' 
+            });
+        }
+
+        // Verificar permisos de todos los grupos
+        const checker = new GroupPermissionChecker(session.client);
+        const permissions = await checker.checkMultipleGroups(groupIds);
+
+        // Guardar permisos en la base de datos
+        const db = new DatabaseService();
+        for (const [groupId, permission] of Object.entries(permissions)) {
+            db.updateGroupPermissions(groupId, permission.canSend, permission.reason);
+        }
+        db.close();
+
+        console.log(`✅ Permisos verificados y guardados para ${groupIds.length} grupos`);
+
+        res.json({ 
+            success: true, 
+            permissions: permissions 
+        });
+        
+    } catch (error) {
+        console.error('❌ Error al verificar permisos múltiples:', error.message);
         res.status(500).json({ 
             success: false, 
             message: error.message 

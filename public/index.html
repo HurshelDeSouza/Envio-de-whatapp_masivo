@@ -316,6 +316,18 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
+        .send-message-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .send-message-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -562,6 +574,8 @@
         const socket = io();
         let selectedCountry = 'USA';
         let userPhone = '';
+        let permissionsVerified = false; // Control para evitar verificaciones repetitivas
+        let verificationInProgress = false; // Control para evitar verificaciones simultáneas
 
         // Obtener número de teléfono de la URL
         window.onload = () => {
@@ -581,7 +595,7 @@
             loadData();
         };
 
-        // Actualizar cada 2 segundos para ver cambios más rápido
+        // Actualizar cada 2 segundos para ver cambios más rápido (solo estadísticas, no permisos)
         setInterval(loadData, 2000);
 
         async function loadData() {
@@ -623,31 +637,148 @@
 
         function changeCountry() {
             selectedCountry = document.getElementById('country-select').value;
+            permissionsVerified = false; // Reset para verificar nuevos grupos
             loadData();
         }
 
-        function displaySuccessfulGroups(groups) {
+        async function displaySuccessfulGroups(groups) {
             const container = document.getElementById('successful-list');
             
             if (groups.length === 0) {
                 container.innerHTML = '<div class="loading">No hay grupos exitosos aún</div>';
+                permissionsVerified = false;
                 return;
             }
 
-            container.innerHTML = groups.map(group => `
-                <div class="group-item success">
-                    <h4>${group.name || 'Sin nombre'}</h4>
-                    <p>🌍 ${group.country} | 👥 ${group.members} miembros</p>
-                    <p>📅 ${new Date(group.joined_at).toLocaleString('es-ES')}</p>
-                    <p>🆔 ID: ${group.group_id}</p>
-                    <div style="margin-top: 10px;">
-                        <span class="badge success">✅ Exitoso</span>
-                        <button class="send-message-btn" onclick='openMessageModal(${JSON.stringify(group)})'>
-                            📤 Enviar Mensaje
-                        </button>
-                    </div>
-                </div>
-            `).join('');
+            // Mostrar grupos con permisos guardados o verificar si es necesario
+            const groupsNeedVerification = groups.filter(g => g.can_send_messages === null);
+            
+            container.innerHTML = groups.map(group => {
+                // Si ya tiene permisos guardados, usarlos
+                if (group.can_send_messages !== null) {
+                    const canSend = group.can_send_messages === 1;
+                    const reason = group.permission_reason || '';
+                    
+                    return `
+                        <div class="group-item success" id="group-${group.id}">
+                            <h4>${group.name || 'Sin nombre'}</h4>
+                            <p>🌍 ${group.country} | 👥 ${group.members} miembros</p>
+                            <p>📅 ${new Date(group.joined_at).toLocaleString('es-ES')}</p>
+                            <p>🆔 ID: ${group.group_id}</p>
+                            <div style="margin-top: 10px;">
+                                <span class="badge success">✅ Exitoso</span>
+                                <button class="send-message-btn" id="btn-${group.id}" 
+                                    ${canSend ? `onclick='openMessageModal(${JSON.stringify(group)})'` : 'disabled style="background: #9ca3af; cursor: not-allowed;"'}>
+                                    ${canSend ? '📤 Enviar Mensaje' : '🚫 No disponible'}
+                                </button>
+                            </div>
+                            <div id="permission-status-${group.id}" style="margin-top: 5px; font-size: 0.85em; color: ${canSend ? '#10b981' : '#ef4444'};">
+                                ${canSend ? '✅ ' + reason : '❌ ' + reason}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Si no tiene permisos guardados, mostrar verificando
+                    return `
+                        <div class="group-item success" id="group-${group.id}">
+                            <h4>${group.name || 'Sin nombre'}</h4>
+                            <p>🌍 ${group.country} | 👥 ${group.members} miembros</p>
+                            <p>📅 ${new Date(group.joined_at).toLocaleString('es-ES')}</p>
+                            <p>🆔 ID: ${group.group_id}</p>
+                            <div style="margin-top: 10px;">
+                                <span class="badge success">✅ Exitoso</span>
+                                <button class="send-message-btn" id="btn-${group.id}">
+                                    🔄 Verificando...
+                                </button>
+                            </div>
+                            <div id="permission-status-${group.id}" style="margin-top: 5px; font-size: 0.85em;"></div>
+                        </div>
+                    `;
+                }
+            }).join('');
+
+            // Verificar solo los grupos que no tienen permisos guardados
+            if (groupsNeedVerification.length > 0 && !verificationInProgress) {
+                verifyGroupsPermissions(groupsNeedVerification);
+            }
+        }
+
+        async function verifyGroupsPermissions(groups) {
+            if (verificationInProgress) return; // Evitar verificaciones simultáneas
+            
+            verificationInProgress = true;
+            const groupIds = groups.map(g => g.group_id);
+            
+            try {
+                const response = await fetch('/api/check-multiple-permissions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        groupIds: groupIds,
+                        phone: userPhone
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Actualizar cada grupo con su estado de permisos
+                    groups.forEach(group => {
+                        const permissions = result.permissions[group.group_id];
+                        updateGroupPermissionUI(group, permissions);
+                    });
+                    permissionsVerified = true; // Marcar como verificado
+                }
+            } catch (error) {
+                console.error('Error al verificar permisos:', error);
+                // Si falla, habilitar todos los botones
+                groups.forEach(group => {
+                    const btn = document.getElementById(`btn-${group.id}`);
+                    if (btn) {
+                        btn.textContent = '📤 Enviar Mensaje';
+                        btn.disabled = false;
+                    }
+                });
+                permissionsVerified = true; // Marcar como verificado aunque falle
+            } finally {
+                verificationInProgress = false;
+            }
+        }
+
+        function updateGroupPermissionUI(group, permissions) {
+            const btn = document.getElementById(`btn-${group.id}`);
+            const statusDiv = document.getElementById(`permission-status-${group.id}`);
+            
+            if (!btn || !statusDiv) return;
+
+            if (permissions.canSend) {
+                btn.textContent = '📤 Enviar Mensaje';
+                btn.disabled = false;
+                btn.onclick = () => openMessageModal(group);
+                statusDiv.innerHTML = '<span style="color: #10b981;">✅ Puedes enviar mensajes</span>';
+            } else {
+                btn.textContent = '🚫 No disponible';
+                btn.disabled = true;
+                btn.style.background = '#9ca3af';
+                btn.style.cursor = 'not-allowed';
+                
+                let reasonColor = '#ef4444';
+                let reasonIcon = '❌';
+                
+                if (permissions.restrictedToAdmins) {
+                    reasonIcon = '👮';
+                    reasonColor = '#f59e0b';
+                }
+                
+                statusDiv.innerHTML = `<span style="color: ${reasonColor};">${reasonIcon} ${permissions.reason}</span>`;
+            }
+        }
+
+        async function checkAndOpenModal(group) {
+            // Esta función ya no se usa, pero la dejamos por compatibilidad
+            openMessageModal(group);
         }
 
         function openMessageModal(group) {

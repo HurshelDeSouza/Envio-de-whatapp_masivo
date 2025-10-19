@@ -32,6 +32,9 @@ class DatabaseService {
                 error_message TEXT,
                 requires_approval INTEGER DEFAULT 0,
                 verified INTEGER DEFAULT 0,
+                can_send_messages INTEGER DEFAULT NULL,
+                permission_reason TEXT,
+                permissions_checked_at DATETIME,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 joined_at DATETIME,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -211,6 +214,41 @@ class DatabaseService {
         `);
 
         return stmt.all();
+    }
+
+    /**
+     * Actualiza los permisos de un grupo
+     */
+    updateGroupPermissions(groupId, canSend, reason) {
+        const stmt = this.db.prepare(`
+            UPDATE groups 
+            SET can_send_messages = ?,
+                permission_reason = ?,
+                permissions_checked_at = CURRENT_TIMESTAMP,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE group_id = ?
+        `);
+
+        return stmt.run(canSend ? 1 : 0, reason, groupId);
+    }
+
+    /**
+     * Obtiene grupos exitosos con información de permisos
+     */
+    getSuccessfulGroupsWithPermissions(country = null) {
+        let query = `
+            SELECT * FROM groups 
+            WHERE (status = 'successful' OR (group_id IS NOT NULL AND group_id != 'FAILED'))
+        `;
+        
+        if (country) {
+            query += ` AND country = ?`;
+            const stmt = this.db.prepare(query + ` ORDER BY joined_at DESC`);
+            return stmt.all(country);
+        } else {
+            const stmt = this.db.prepare(query + ` ORDER BY joined_at DESC`);
+            return stmt.all();
+        }
     }
 
     /**
