@@ -174,8 +174,9 @@
 
         .stat-card.total .number { color: #667eea; }
         .stat-card.success .number { color: #10b981; }
+        .stat-card.approval .number { color: #f59e0b; }
         .stat-card.failed .number { color: #ef4444; }
-        .stat-card.pending .number { color: #f59e0b; }
+        .stat-card.pending .number { color: #f97316; }
 
         .tabs-container {
             background: white;
@@ -363,6 +364,11 @@
                 <div class="number" id="success-groups">-</div>
                 <p>Unidos correctamente</p>
             </div>
+            <div class="stat-card approval">
+                <h3>Requieren Aprobación</h3>
+                <div class="number" id="approval-groups">-</div>
+                <p>Necesitan autorización</p>
+            </div>
             <div class="stat-card failed">
                 <h3>Grupos Fallidos</h3>
                 <div class="number" id="failed-groups">-</div>
@@ -380,27 +386,20 @@
                 <div class="tab active" onclick="switchTab('successful')">
                     ✅ Grupos Exitosos
                 </div>
-                <div class="tab" onclick="switchTab('pending')">
-                    ⏳ Grupos Pendientes
-                </div>
                 <div class="tab" onclick="switchTab('approval')">
                     ⚠️ Requieren Aprobación
                 </div>
                 <div class="tab" onclick="switchTab('failed')">
                     ❌ Grupos Fallidos
                 </div>
+                <div class="tab" onclick="switchTab('pending')">
+                    ⏳ Grupos Pendientes
+                </div>
             </div>
 
             <div class="tab-content active" id="successful-tab">
                 <button class="refresh-btn" onclick="loadData()">🔄 Actualizar</button>
                 <div class="group-list" id="successful-list">
-                    <div class="loading">Cargando...</div>
-                </div>
-            </div>
-
-            <div class="tab-content" id="pending-tab">
-                <button class="refresh-btn" onclick="loadData()">🔄 Actualizar</button>
-                <div class="group-list" id="pending-list">
                     <div class="loading">Cargando...</div>
                 </div>
             </div>
@@ -415,6 +414,13 @@
             <div class="tab-content" id="failed-tab">
                 <button class="refresh-btn" onclick="loadData()">🔄 Actualizar</button>
                 <div class="group-list" id="failed-list">
+                    <div class="loading">Cargando...</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="pending-tab">
+                <button class="refresh-btn" onclick="loadData()">🔄 Actualizar</button>
+                <div class="group-list" id="pending-list">
                     <div class="loading">Cargando...</div>
                 </div>
             </div>
@@ -457,6 +463,7 @@
                 const approvalRes = await fetch(`/api/groups/approval?country=${selectedCountry}`);
                 const approvalGroups = await approvalRes.json();
                 displayApprovalGroups(approvalGroups);
+                document.getElementById('approval-groups').textContent = approvalGroups.length || 0;
 
                 // Cargar grupos fallidos
                 const failedRes = await fetch(`/api/groups/failed?country=${selectedCountry}`);
