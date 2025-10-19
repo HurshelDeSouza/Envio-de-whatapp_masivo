@@ -5,6 +5,8 @@ const path = require('path');
  * Servicio de base de datos para gestionar grupos de WhatsApp
  */
 class DatabaseService {
+    static initialized = false;
+
     constructor() {
         const dbPath = path.join(__dirname, '../../database/groups.db');
         this.db = new Database(dbPath);
@@ -46,7 +48,11 @@ class DatabaseService {
             )
         `);
 
-        console.log('✅ Base de datos inicializada correctamente');
+        // Solo mostrar mensaje en el primer inicio
+        if (!DatabaseService.initialized) {
+            console.log('✅ Base de datos inicializada correctamente');
+            DatabaseService.initialized = true;
+        }
     }
 
     /**

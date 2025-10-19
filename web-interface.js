@@ -84,25 +84,32 @@ app.get('/api/groups/failed', (req, res) => {
 // API: Ejecutar proceso de unirse a grupos
 app.post('/api/join-group', async (req, res) => {
     try {
-        const { exec } = require('child_process');
+        const { spawn } = require('child_process');
+        
+        console.log('\n' + '='.repeat(60));
+        console.log('🚀 Iniciando proceso de agregar grupo...');
+        console.log('='.repeat(60) + '\n');
         
         // Ejecutar el script de unirse a grupos
-        exec('node index-group-joiner.js', (error, stdout, stderr) => {
-            if (error) {
-                console.error('Error al ejecutar:', error);
-                io.emit('join-error', { message: error.message });
-                return;
+        const process = spawn('node', ['index-group-joiner.js'], {
+            stdio: 'inherit' // Mostrar output en la terminal del servidor
+        });
+        
+        process.on('close', (code) => {
+            if (code === 0) {
+                console.log('\n✅ Proceso de unirse a grupo completado exitosamente\n');
+                io.emit('join-complete', { message: 'Proceso completado' });
+            } else {
+                console.error('\n❌ Proceso terminó con errores\n');
+                io.emit('join-error', { message: 'Error en el proceso' });
             }
-            
-            // Emitir actualización a todos los clientes conectados
-            io.emit('join-complete', { message: 'Proceso completado' });
-            console.log('✅ Proceso de unirse a grupo completado');
         });
         
         res.json({ success: true, message: 'Proceso iniciado' });
         io.emit('join-started', { message: 'Iniciando proceso...' });
         
     } catch (error) {
+        console.error('❌ Error al iniciar proceso:', error.message);
         res.status(500).json({ success: false, message: error.message });
     }
 });
