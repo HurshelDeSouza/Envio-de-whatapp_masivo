@@ -64,6 +64,16 @@ app.get('/api/groups/pending', (req, res) => {
     res.json(groups);
 });
 
+// API: Obtener grupos que requieren aprobación
+app.get('/api/groups/approval', (req, res) => {
+    const country = req.query.country || 'USA';
+    const db = new DatabaseService();
+    const groups = db.getGroupsRequiringApproval(country);
+    db.close();
+    
+    res.json(groups);
+});
+
 // API: Obtener grupos fallidos
 app.get('/api/groups/failed', (req, res) => {
     const country = req.query.country || 'USA';

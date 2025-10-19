@@ -30,6 +30,8 @@ class DatabaseService {
                 status TEXT DEFAULT 'pending',
                 group_id TEXT,
                 error_message TEXT,
+                requires_approval INTEGER DEFAULT 0,
+                verified INTEGER DEFAULT 0,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 joined_at DATETIME,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -209,6 +211,60 @@ class DatabaseService {
         `);
 
         return stmt.all();
+    }
+
+    /**
+     * Marca un grupo como verificado
+     */
+    markGroupAsVerified(link, requiresApproval, groupInfo = null) {
+        const stmt = this.db.prepare(`
+            UPDATE groups 
+            SET verified = 1,
+                requires_approval = ?,
+                name = COALESCE(?, name),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE link = ?
+        `);
+
+        return stmt.run(requiresApproval ? 1 : 0, groupInfo?.groupName || null, link);
+    }
+
+    /**
+     * Obtiene grupos que requieren aprobación
+     */
+    getGroupsRequiringApproval(country = null) {
+        let query = `
+            SELECT * FROM groups 
+            WHERE verified = 1 AND requires_approval = 1 AND status = 'pending'
+        `;
+        
+        if (country) {
+            query += ` AND country = ?`;
+            const stmt = this.db.prepare(query + ` ORDER BY created_at ASC`);
+            return stmt.all(country);
+        } else {
+            const stmt = this.db.prepare(query + ` ORDER BY created_at ASC`);
+            return stmt.all();
+        }
+    }
+
+    /**
+     * Obtiene grupos verificados que funcionan (no requieren aprobación)
+     */
+    getWorkingGroups(country = null) {
+        let query = `
+            SELECT * FROM groups 
+            WHERE verified = 1 AND requires_approval = 0 AND status = 'pending'
+        `;
+        
+        if (country) {
+            query += ` AND country = ?`;
+            const stmt = this.db.prepare(query + ` ORDER BY created_at ASC`);
+            return stmt.all(country);
+        } else {
+            const stmt = this.db.prepare(query + ` ORDER BY created_at ASC`);
+            return stmt.all();
+        }
     }
 
     /**

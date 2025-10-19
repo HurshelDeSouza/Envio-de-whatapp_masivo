@@ -108,7 +108,26 @@ class GroupJoinerService {
             };
 
         } catch (error) {
-            console.error(`❌ Error al unirse al grupo:`, error.message);
+            // Clasificar el tipo de error
+            let errorType = 'unknown';
+            let errorMessage = error.message;
+            
+            if (errorMessage.includes('Evaluation failed')) {
+                errorType = 'link_expired';
+                errorMessage = 'Enlace expirado o grupo lleno';
+            } else if (errorMessage.includes('Target closed')) {
+                errorType = 'connection_error';
+                errorMessage = 'Error de conexión';
+            } else if (errorMessage.includes('not authorized')) {
+                errorType = 'requires_approval';
+                errorMessage = 'Requiere aprobación de administrador';
+            } else if (errorMessage.includes('invite')) {
+                errorType = 'invalid_invite';
+                errorMessage = 'Enlace de invitación inválido';
+            }
+            
+            console.error(`❌ Error al unirse al grupo:`, errorMessage);
+            console.log(`   Tipo de error: ${errorType}`);
             
             // Guardar grupo fallido en historial para no volver a intentar
             this.joinedGroups.groups.push({
@@ -118,7 +137,8 @@ class GroupJoinerService {
                 members: group.members,
                 joinedAt: new Date().toISOString(),
                 groupId: 'FAILED',
-                error: error.message,
+                error: errorMessage,
+                errorType: errorType,
                 status: 'failed'
             });
             this.joinedGroups.lastJoinDate = new Date().toISOString();
@@ -128,7 +148,8 @@ class GroupJoinerService {
             
             return {
                 success: false,
-                message: error.message,
+                message: errorMessage,
+                errorType: errorType,
                 group: group
             };
         }

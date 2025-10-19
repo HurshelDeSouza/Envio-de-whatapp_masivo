@@ -249,6 +249,10 @@
             border-left-color: #ef4444;
         }
 
+        .group-item.approval {
+            border-left-color: #f59e0b;
+        }
+
         .group-item h4 {
             color: #333;
             margin-bottom: 5px;
@@ -281,6 +285,11 @@
         .badge.failed {
             background: #fee2e2;
             color: #991b1b;
+        }
+
+        .badge.approval {
+            background: #fef3c7;
+            color: #92400e;
         }
 
         .loading {
@@ -374,6 +383,9 @@
                 <div class="tab" onclick="switchTab('pending')">
                     ⏳ Grupos Pendientes
                 </div>
+                <div class="tab" onclick="switchTab('approval')">
+                    ⚠️ Requieren Aprobación
+                </div>
                 <div class="tab" onclick="switchTab('failed')">
                     ❌ Grupos Fallidos
                 </div>
@@ -389,6 +401,13 @@
             <div class="tab-content" id="pending-tab">
                 <button class="refresh-btn" onclick="loadData()">🔄 Actualizar</button>
                 <div class="group-list" id="pending-list">
+                    <div class="loading">Cargando...</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="approval-tab">
+                <button class="refresh-btn" onclick="loadData()">🔄 Actualizar</button>
+                <div class="group-list" id="approval-list">
                     <div class="loading">Cargando...</div>
                 </div>
             </div>
@@ -433,6 +452,11 @@
                 const pendingRes = await fetch(`/api/groups/pending?country=${selectedCountry}`);
                 const pendingGroups = await pendingRes.json();
                 displayPendingGroups(pendingGroups);
+
+                // Cargar grupos que requieren aprobación
+                const approvalRes = await fetch(`/api/groups/approval?country=${selectedCountry}`);
+                const approvalGroups = await approvalRes.json();
+                displayApprovalGroups(approvalGroups);
 
                 // Cargar grupos fallidos
                 const failedRes = await fetch(`/api/groups/failed?country=${selectedCountry}`);
@@ -480,6 +504,25 @@
                     <h4>${group.name || 'Sin nombre'}</h4>
                     <p>🌍 ${group.country} | 👥 ${group.members} miembros</p>
                     <span class="badge pending">⏳ Pendiente</span>
+                </div>
+            `).join('');
+        }
+
+        function displayApprovalGroups(groups) {
+            const container = document.getElementById('approval-list');
+            
+            if (groups.length === 0) {
+                container.innerHTML = '<div class="loading">No hay grupos que requieran aprobación</div>';
+                return;
+            }
+
+            container.innerHTML = groups.map(group => `
+                <div class="group-item approval">
+                    <h4>${group.name || 'Sin nombre'}</h4>
+                    <p>🌍 ${group.country} | 👥 ${group.members} miembros</p>
+                    <p>🔗 <a href="${group.link}" target="_blank" style="color: #667eea; text-decoration: none;">${group.link}</a></p>
+                    <p style="color: #92400e; font-size: 0.85em;">⚠️ Este grupo requiere aprobación del administrador para unirse</p>
+                    <span class="badge approval">⚠️ Requiere Aprobación</span>
                 </div>
             `).join('');
         }

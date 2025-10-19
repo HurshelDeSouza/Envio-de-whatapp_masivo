@@ -8,7 +8,9 @@
     "send-messages": "node index.js",
     "api": "node api-server.js",
     "join-groups": "node join-groups.js",
-    "web": "node web-interface.js"
+    "web": "node web-interface.js",
+    "verify": "node verify-and-update-db.js",
+    "verify-only": "node verify-links.js"
   },
   "keywords": [
     "whatsapp",
