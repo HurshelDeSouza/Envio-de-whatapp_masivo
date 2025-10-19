@@ -25,9 +25,18 @@ class WhatsAppSessionManager {
         // Limpiar el número de teléfono (solo dígitos y +)
         const cleanPhone = phone.replace(/[^\d+]/g, '');
         
-        // Si ya existe una sesión, devolverla (sin importar el estado)
+        // Si ya existe una sesión en memoria
         if (this.sessions.has(cleanPhone)) {
-            return this.sessions.get(cleanPhone);
+            const session = this.sessions.get(cleanPhone);
+            console.log(`📱 Sesión existente encontrada para ${cleanPhone}, estado: ${session.status}`);
+            
+            // Si la sesión ya está lista, emitir evento inmediatamente
+            if (session.status === 'ready') {
+                console.log(`✅ Sesión ya está lista, emitiendo evento whatsapp-ready`);
+                this.io.emit('whatsapp-ready', { phone: cleanPhone });
+            }
+            
+            return session;
         }
 
         // Crear nueva sesión solo si no existe

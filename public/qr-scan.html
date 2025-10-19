@@ -239,8 +239,14 @@
                 if (result.success) {
                     if (result.needsQR) {
                         console.log('✅ Esperando código QR...');
+                        // Mostrar mensaje de espera
+                        document.querySelector('.loading').textContent = 'Esperando código QR...';
                     } else {
                         console.log('✅ Sesión encontrada, esperando conexión...');
+                        // Tiene sesión, esperar a que esté ready
+                        document.querySelector('.loading').textContent = 'Conectando con WhatsApp...';
+                        showStatus('info', '🔄 Conectando con WhatsApp...');
+                        // El evento whatsapp-ready redirigirá al dashboard
                     }
                 } else {
                     showStatus('error', result.message);
@@ -301,12 +307,27 @@
 
             // Escuchar cuando se conecte exitosamente
             socket.on('whatsapp-ready', (data) => {
-                if (data.phone === phone || data.phone === '+' + phone.replace(/\+/g, '')) {
-                    console.log('✅ WhatsApp listo, redirigiendo...');
+                console.log('📱 Evento whatsapp-ready recibido para:', data.phone);
+                
+                // Normalizar números para comparación
+                const normalizedDataPhone = data.phone.replace(/\D/g, '');
+                const normalizedPhone = phone.replace(/\D/g, '');
+                
+                console.log('Comparando:', normalizedDataPhone, '===', normalizedPhone);
+                
+                if (normalizedDataPhone === normalizedPhone) {
+                    console.log('✅ WhatsApp listo, redirigiendo al dashboard...');
                     showStatus('success', '✅ ¡Conectado exitosamente! Redirigiendo...');
+                    
+                    // Guardar el número en localStorage
+                    localStorage.setItem('whatsapp_phone', phone);
+                    
+                    // Redirigir inmediatamente
                     setTimeout(() => {
                         window.location.href = `/dashboard?phone=${encodeURIComponent(phone)}`;
-                    }, 2000);
+                    }, 1000);
+                } else {
+                    console.log('⚠️ Evento no es para este número');
                 }
             });
 
