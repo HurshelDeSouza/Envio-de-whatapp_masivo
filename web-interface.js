@@ -40,9 +40,9 @@ app.get('/phone-selector', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'phone-selector.html'));
 });
 
-// Ruta de login de WhatsApp (con número) - Ahora maneja QR si es necesario
+// Ruta de login - redirige al login de usuario
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+    res.redirect('/auth-login');
 });
 
 // Ruta para mostrar QR de un número nuevo
