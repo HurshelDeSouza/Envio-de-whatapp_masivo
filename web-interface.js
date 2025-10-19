@@ -54,6 +54,47 @@ app.get('/api/groups/pending', (req, res) => {
     res.json(groups);
 });
 
+// API: Obtener grupos fallidos
+app.get('/api/groups/failed', (req, res) => {
+    const db = new DatabaseService();
+    const stmt = db.db.prepare(`
+        SELECT * FROM groups 
+        WHERE status = 'failed' OR group_id = 'FAILED'
+        ORDER BY joined_at DESC
+        LIMIT 50
+    `);
+    const groups = stmt.all();
+    db.close();
+    
+    res.json(groups);
+});
+
+// API: Ejecutar proceso de unirse a grupos
+app.post('/api/join-group', async (req, res) => {
+    try {
+        const { exec } = require('child_process');
+        
+        // Ejecutar el script de unirse a grupos
+        exec('node index-group-joiner.js', (error, stdout, stderr) => {
+            if (error) {
+                console.error('Error al ejecutar:', error);
+                io.emit('join-error', { message: error.message });
+                return;
+            }
+            
+            // Emitir actualización a todos los clientes conectados
+            io.emit('join-complete', { message: 'Proceso completado' });
+            console.log('✅ Proceso de unirse a grupo completado');
+        });
+        
+        res.json({ success: true, message: 'Proceso iniciado' });
+        io.emit('join-started', { message: 'Iniciando proceso...' });
+        
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // WebSocket para actualizaciones en tiempo real
 io.on('connection', (socket) => {
     console.log('✅ Cliente conectado a la interfaz web');

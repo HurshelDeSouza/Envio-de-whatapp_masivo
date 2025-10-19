@@ -43,6 +43,68 @@
             font-size: 1.1em;
         }
 
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+
+        .status-message.info {
+            background: #dbeafe;
+            color: #1e40af;
+            display: block;
+        }
+
+        .status-message.success {
+            background: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -80,17 +142,48 @@
         .stat-card.failed .number { color: #ef4444; }
         .stat-card.pending .number { color: #f59e0b; }
 
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .panel {
+        .tabs-container {
             background: white;
-            padding: 25px;
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f9fafb;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab:hover {
+            background: #f3f4f6;
+        }
+
+        .tab.active {
+            color: #667eea;
+            background: white;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 25px;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .panel h2 {
@@ -115,6 +208,10 @@
 
         .group-item.success {
             border-left-color: #10b981;
+        }
+
+        .group-item.failed {
+            border-left-color: #ef4444;
         }
 
         .group-item h4 {
@@ -146,6 +243,11 @@
             color: #92400e;
         }
 
+        .badge.failed {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
         .loading {
             text-align: center;
             padding: 40px;
@@ -169,8 +271,12 @@
         }
 
         @media (max-width: 768px) {
-            .content-grid {
-                grid-template-columns: 1fr;
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                border-bottom: 1px solid #e5e7eb;
             }
         }
     </style>
@@ -180,6 +286,12 @@
         <div class="header">
             <h1>🤖 WhatsApp Group Auto-Joiner</h1>
             <p>Dashboard de Control y Estadísticas</p>
+            <div class="action-buttons">
+                <button class="btn-primary" id="join-btn" onclick="joinGroup()">
+                    ➕ Agregar Grupo
+                </button>
+            </div>
+            <div id="status-message" class="status-message"></div>
         </div>
 
         <div class="stats-grid">
@@ -205,19 +317,36 @@
             </div>
         </div>
 
-        <div class="content-grid">
-            <div class="panel">
-                <h2>✅ Grupos Exitosos</h2>
+        <div class="tabs-container">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('successful')">
+                    ✅ Grupos Exitosos
+                </div>
+                <div class="tab" onclick="switchTab('pending')">
+                    ⏳ Grupos Pendientes
+                </div>
+                <div class="tab" onclick="switchTab('failed')">
+                    ❌ Grupos Fallidos
+                </div>
+            </div>
+
+            <div class="tab-content active" id="successful-tab">
                 <button class="refresh-btn" onclick="loadData()">🔄 Actualizar</button>
                 <div class="group-list" id="successful-list">
                     <div class="loading">Cargando...</div>
                 </div>
             </div>
 
-            <div class="panel">
-                <h2>⏳ Grupos Pendientes</h2>
+            <div class="tab-content" id="pending-tab">
                 <button class="refresh-btn" onclick="loadData()">🔄 Actualizar</button>
                 <div class="group-list" id="pending-list">
+                    <div class="loading">Cargando...</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="failed-tab">
+                <button class="refresh-btn" onclick="loadData()">🔄 Actualizar</button>
+                <div class="group-list" id="failed-list">
                     <div class="loading">Cargando...</div>
                 </div>
             </div>
@@ -231,8 +360,8 @@
         // Cargar datos al iniciar
         loadData();
 
-        // Actualizar cada 5 segundos
-        setInterval(loadData, 5000);
+        // Actualizar cada 2 segundos para ver cambios más rápido
+        setInterval(loadData, 2000);
 
         async function loadData() {
             try {
@@ -254,6 +383,11 @@
                 const pendingRes = await fetch('/api/groups/pending');
                 const pendingGroups = await pendingRes.json();
                 displayPendingGroups(pendingGroups);
+
+                // Cargar grupos fallidos
+                const failedRes = await fetch('/api/groups/failed');
+                const failedGroups = await failedRes.json();
+                displayFailedGroups(failedGroups);
 
             } catch (error) {
                 console.error('Error al cargar datos:', error);
@@ -295,9 +429,99 @@
             `).join('');
         }
 
+        function displayFailedGroups(groups) {
+            const container = document.getElementById('failed-list');
+            
+            if (groups.length === 0) {
+                container.innerHTML = '<div class="loading">No hay grupos fallidos</div>';
+                return;
+            }
+
+            container.innerHTML = groups.slice(0, 50).map(group => `
+                <div class="group-item failed">
+                    <h4>${group.name || 'Sin nombre'}</h4>
+                    <p>🌍 ${group.country} | 👥 ${group.members} miembros</p>
+                    <p style="color: #991b1b; font-size: 0.85em;">❌ ${group.error_message || 'Error desconocido'}</p>
+                    <p>📅 ${new Date(group.joined_at).toLocaleString('es-ES')}</p>
+                    <span class="badge failed">❌ Fallido</span>
+                </div>
+            `).join('');
+        }
+
         socket.on('connect', () => {
             console.log('✅ Conectado al servidor');
         });
+
+        // Escuchar eventos del proceso de unirse a grupos
+        socket.on('join-started', (data) => {
+            showStatus('info', '🔄 ' + data.message);
+            document.getElementById('join-btn').disabled = true;
+        });
+
+        socket.on('join-complete', (data) => {
+            showStatus('success', '✅ ' + data.message);
+            document.getElementById('join-btn').disabled = false;
+            // Actualizar inmediatamente
+            loadData();
+        });
+
+        socket.on('join-error', (data) => {
+            showStatus('error', '❌ Error: ' + data.message);
+            document.getElementById('join-btn').disabled = false;
+        });
+
+        async function joinGroup() {
+            try {
+                const btn = document.getElementById('join-btn');
+                btn.disabled = true;
+                showStatus('info', '🔄 Iniciando proceso de unirse a grupo...');
+
+                const response = await fetch('/api/join-group', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (!result.success) {
+                    showStatus('error', '❌ Error: ' + result.message);
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                showStatus('error', '❌ Error: ' + error.message);
+                document.getElementById('join-btn').disabled = false;
+            }
+        }
+
+        function showStatus(type, message) {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.className = 'status-message ' + type;
+            statusDiv.textContent = message;
+            
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function switchTab(tabName) {
+            // Remover clase active de todos los tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remover clase active de todos los contenidos
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Activar el tab seleccionado
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
     </script>
 </body>
 </html>

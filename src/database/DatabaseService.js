@@ -197,7 +197,9 @@ class DatabaseService {
      */
     getSuccessfulGroups() {
         const stmt = this.db.prepare(`
-            SELECT * FROM groups WHERE status = 'successful' ORDER BY joined_at DESC
+            SELECT * FROM groups 
+            WHERE (status = 'successful' OR (group_id IS NOT NULL AND group_id != 'FAILED'))
+            ORDER BY joined_at DESC
         `);
 
         return stmt.all();
