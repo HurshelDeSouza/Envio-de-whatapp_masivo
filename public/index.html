@@ -105,6 +105,41 @@
             display: block;
         }
 
+        .country-selector {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .country-selector label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .country-selector select {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            background: white;
+            color: #333;
+            transition: all 0.3s;
+        }
+
+        .country-selector select:hover {
+            border-color: #5568d3;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .country-selector select:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -286,6 +321,20 @@
         <div class="header">
             <h1>🤖 WhatsApp Group Auto-Joiner</h1>
             <p>Dashboard de Control y Estadísticas</p>
+            
+            <div class="country-selector">
+                <label>🌍 Filtrar por país:</label>
+                <select id="country-select" onchange="changeCountry()">
+                    <option value="USA">🇺🇸 USA</option>
+                    <option value="COLOMBIA">🇨🇴 Colombia</option>
+                    <option value="VENEZUELA">🇻🇪 Venezuela</option>
+                    <option value="ARGENTINA">🇦🇷 Argentina</option>
+                    <option value="MEXICO">🇲🇽 México</option>
+                    <option value="LATAM">🌎 LATAM</option>
+                    <option value="LATINOS">🌎 Latinos</option>
+                </select>
+            </div>
+
             <div class="action-buttons">
                 <button class="btn-primary" id="join-btn" onclick="joinGroup()">
                     ➕ Agregar Grupo
@@ -356,6 +405,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        let selectedCountry = 'USA';
 
         // Cargar datos al iniciar
         loadData();
@@ -366,32 +416,37 @@
         async function loadData() {
             try {
                 // Cargar estadísticas
-                const statsRes = await fetch('/api/stats');
+                const statsRes = await fetch(`/api/stats?country=${selectedCountry}`);
                 const stats = await statsRes.json();
                 
-                document.getElementById('total-groups').textContent = stats.usa.total || 0;
-                document.getElementById('success-groups').textContent = stats.usa.successful || 0;
-                document.getElementById('failed-groups').textContent = stats.usa.failed || 0;
-                document.getElementById('pending-groups').textContent = stats.usa.pending || 0;
+                document.getElementById('total-groups').textContent = stats.country.total || 0;
+                document.getElementById('success-groups').textContent = stats.country.successful || 0;
+                document.getElementById('failed-groups').textContent = stats.country.failed || 0;
+                document.getElementById('pending-groups').textContent = stats.country.pending || 0;
 
                 // Cargar grupos exitosos
-                const successRes = await fetch('/api/groups/successful');
+                const successRes = await fetch(`/api/groups/successful?country=${selectedCountry}`);
                 const successGroups = await successRes.json();
                 displaySuccessfulGroups(successGroups);
 
                 // Cargar grupos pendientes
-                const pendingRes = await fetch('/api/groups/pending');
+                const pendingRes = await fetch(`/api/groups/pending?country=${selectedCountry}`);
                 const pendingGroups = await pendingRes.json();
                 displayPendingGroups(pendingGroups);
 
                 // Cargar grupos fallidos
-                const failedRes = await fetch('/api/groups/failed');
+                const failedRes = await fetch(`/api/groups/failed?country=${selectedCountry}`);
                 const failedGroups = await failedRes.json();
                 displayFailedGroups(failedGroups);
 
             } catch (error) {
                 console.error('Error al cargar datos:', error);
             }
+        }
+
+        function changeCountry() {
+            selectedCountry = document.getElementById('country-select').value;
+            loadData();
         }
 
         function displaySuccessfulGroups(groups) {

@@ -25,21 +25,30 @@ app.get('/', (req, res) => {
 
 // API: Obtener estadísticas generales
 app.get('/api/stats', (req, res) => {
+    const country = req.query.country || 'USA';
     const db = new DatabaseService();
     const stats = db.getStatistics();
-    const statsByCountry = db.getStatisticsByCountry('USA');
+    const statsByCountry = db.getStatisticsByCountry(country);
     db.close();
     
     res.json({
         general: stats,
-        usa: statsByCountry
+        country: statsByCountry,
+        selectedCountry: country
     });
 });
 
 // API: Obtener grupos exitosos
 app.get('/api/groups/successful', (req, res) => {
+    const country = req.query.country || 'USA';
     const db = new DatabaseService();
-    const groups = db.getSuccessfulGroups();
+    const stmt = db.db.prepare(`
+        SELECT * FROM groups 
+        WHERE (status = 'successful' OR (group_id IS NOT NULL AND group_id != 'FAILED'))
+        AND country = ?
+        ORDER BY joined_at DESC
+    `);
+    const groups = stmt.all(country);
     db.close();
     
     res.json(groups);
@@ -47,8 +56,9 @@ app.get('/api/groups/successful', (req, res) => {
 
 // API: Obtener grupos pendientes
 app.get('/api/groups/pending', (req, res) => {
+    const country = req.query.country || 'USA';
     const db = new DatabaseService();
-    const groups = db.getPendingGroupsByCountry('USA', 50);
+    const groups = db.getPendingGroupsByCountry(country, 50);
     db.close();
     
     res.json(groups);
@@ -56,14 +66,16 @@ app.get('/api/groups/pending', (req, res) => {
 
 // API: Obtener grupos fallidos
 app.get('/api/groups/failed', (req, res) => {
+    const country = req.query.country || 'USA';
     const db = new DatabaseService();
     const stmt = db.db.prepare(`
         SELECT * FROM groups 
-        WHERE status = 'failed' OR group_id = 'FAILED'
+        WHERE (status = 'failed' OR group_id = 'FAILED')
+        AND country = ?
         ORDER BY joined_at DESC
         LIMIT 50
     `);
-    const groups = stmt.all();
+    const groups = stmt.all(country);
     db.close();
     
     res.json(groups);
