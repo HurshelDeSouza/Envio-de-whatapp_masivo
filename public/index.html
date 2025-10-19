@@ -105,24 +105,32 @@
             display: block;
         }
 
-        .country-selector {
+        .controls-row {
             margin-top: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .country-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .country-selector label {
             font-weight: bold;
             color: #333;
+            font-size: 0.9em;
         }
 
         .country-selector select {
-            padding: 10px 20px;
+            padding: 8px 15px;
             border: 2px solid #667eea;
             border-radius: 8px;
-            font-size: 1em;
+            font-size: 0.9em;
             cursor: pointer;
             background: white;
             color: #333;
@@ -140,43 +148,105 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        .action-buttons-inline {
+            display: flex;
+            gap: 10px;
         }
 
-        .stat-card {
+        .btn-small {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-small:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-small:active {
+            transform: translateY(0);
+        }
+
+        .btn-small.btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-small.btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn-small:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .stats-tabs-container {
             background: white;
-            padding: 25px;
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
+            margin-bottom: 30px;
+            overflow: hidden;
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
+        .stats-tabs {
+            display: flex;
+            flex-wrap: wrap;
         }
 
-        .stat-card h3 {
-            color: #666;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            margin-bottom: 10px;
+        .stat-tab {
+            flex: 1;
+            min-width: 150px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            background: white;
         }
 
-        .stat-card .number {
-            font-size: 3em;
+        .stat-tab:hover {
+            background: #f9fafb;
+        }
+
+        .stat-tab.active {
+            background: #f9fafb;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .stat-tab-number {
+            font-size: 2.5em;
             font-weight: bold;
             margin-bottom: 5px;
+            color: #667eea;
         }
 
-        .stat-card.total .number { color: #667eea; }
-        .stat-card.success .number { color: #10b981; }
-        .stat-card.approval .number { color: #f59e0b; }
-        .stat-card.failed .number { color: #ef4444; }
-        .stat-card.pending .number { color: #f97316; }
+        .stat-tab-number.success-color { color: #10b981; }
+        .stat-tab-number.approval-color { color: #f59e0b; }
+        .stat-tab-number.failed-color { color: #ef4444; }
+        .stat-tab-number.pending-color { color: #f97316; }
+
+        .stat-tab-label {
+            font-size: 0.85em;
+            font-weight: bold;
+            color: #333;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .stat-tab-desc {
+            font-size: 0.75em;
+            color: #666;
+        }
 
         .tabs-container {
             background: white;
@@ -445,6 +515,33 @@
             .tab {
                 border-bottom: 1px solid #e5e7eb;
             }
+
+            .stats-tabs {
+                flex-direction: column;
+            }
+
+            .stat-tab {
+                min-width: 100%;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .stat-tab.active {
+                border-bottom: 3px solid #667eea;
+            }
+
+            .controls-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .action-buttons-inline {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .btn-small {
+                flex: 1;
+            }
         }
     </style>
 </head>
@@ -455,55 +552,59 @@
             <p>Dashboard de Control y Estadísticas</p>
             <p id="user-phone" style="font-size: 0.9em; color: #667eea; margin-top: 5px;"></p>
             
-            <div class="country-selector">
-                <label>🌍 Filtrar por país:</label>
-                <select id="country-select" onchange="changeCountry()">
-                    <option value="USA">🇺🇸 USA</option>
-                    <option value="COLOMBIA">🇨🇴 Colombia</option>
-                    <option value="VENEZUELA">🇻🇪 Venezuela</option>
-                    <option value="ARGENTINA">🇦🇷 Argentina</option>
-                    <option value="MEXICO">🇲🇽 México</option>
-                    <option value="LATAM">🌎 LATAM</option>
-                    <option value="LATINOS">🌎 Latinos</option>
-                </select>
-            </div>
+            <div class="controls-row">
+                <div class="country-selector">
+                    <label>🌍 Filtrar por país:</label>
+                    <select id="country-select" onchange="changeCountry()">
+                        <option value="USA">🇺🇸 USA</option>
+                        <option value="COLOMBIA">🇨🇴 Colombia</option>
+                        <option value="VENEZUELA">🇻🇪 Venezuela</option>
+                        <option value="ARGENTINA">🇦🇷 Argentina</option>
+                        <option value="MEXICO">🇲🇽 México</option>
+                        <option value="LATAM">🌎 LATAM</option>
+                        <option value="LATINOS">🌎 Latinos</option>
+                    </select>
+                </div>
 
-            <div class="action-buttons">
-                <button class="btn-primary" id="join-btn" onclick="joinGroup()">
-                    ➕ Agregar Grupo
-                </button>
-                <button class="btn-primary" onclick="logout()" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
-                    🚪 Cerrar Sesión
-                </button>
+                <div class="action-buttons-inline">
+                    <button class="btn-small btn-primary" id="join-btn" onclick="joinGroup()">
+                        ➕ Agregar Grupo
+                    </button>
+                    <button class="btn-small btn-danger" onclick="logout()">
+                        🚪 Cerrar Sesión
+                    </button>
+                </div>
             </div>
             <div id="status-message" class="status-message"></div>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-card total">
-                <h3>Total de Grupos</h3>
-                <div class="number" id="total-groups">-</div>
-                <p>En base de datos</p>
-            </div>
-            <div class="stat-card success">
-                <h3>Grupos Exitosos</h3>
-                <div class="number" id="success-groups">-</div>
-                <p>Unidos correctamente</p>
-            </div>
-            <div class="stat-card approval">
-                <h3>Requieren Aprobación</h3>
-                <div class="number" id="approval-groups">-</div>
-                <p>Necesitan autorización</p>
-            </div>
-            <div class="stat-card failed">
-                <h3>Grupos Fallidos</h3>
-                <div class="number" id="failed-groups">-</div>
-                <p>Con errores</p>
-            </div>
-            <div class="stat-card pending">
-                <h3>Grupos Pendientes</h3>
-                <div class="number" id="pending-groups">-</div>
-                <p>Por procesar</p>
+        <div class="stats-tabs-container">
+            <div class="stats-tabs">
+                <div class="stat-tab active" onclick="switchStatTab('total')">
+                    <div class="stat-tab-number" id="total-groups">-</div>
+                    <div class="stat-tab-label">Total de Grupos</div>
+                    <div class="stat-tab-desc">En base de datos</div>
+                </div>
+                <div class="stat-tab" onclick="switchStatTab('success')">
+                    <div class="stat-tab-number success-color" id="success-groups">-</div>
+                    <div class="stat-tab-label">Grupos Exitosos</div>
+                    <div class="stat-tab-desc">Unidos correctamente</div>
+                </div>
+                <div class="stat-tab" onclick="switchStatTab('approval')">
+                    <div class="stat-tab-number approval-color" id="approval-groups">-</div>
+                    <div class="stat-tab-label">Requieren Aprobación</div>
+                    <div class="stat-tab-desc">Necesitan autorización</div>
+                </div>
+                <div class="stat-tab" onclick="switchStatTab('failed')">
+                    <div class="stat-tab-number failed-color" id="failed-groups">-</div>
+                    <div class="stat-tab-label">Grupos Fallidos</div>
+                    <div class="stat-tab-desc">Con errores</div>
+                </div>
+                <div class="stat-tab" onclick="switchStatTab('pending')">
+                    <div class="stat-tab-number pending-color" id="pending-groups">-</div>
+                    <div class="stat-tab-label">Grupos Pendientes</div>
+                    <div class="stat-tab-desc">Por procesar</div>
+                </div>
             </div>
         </div>
 
@@ -969,6 +1070,33 @@
             // Activar el tab seleccionado
             event.target.classList.add('active');
             document.getElementById(tabName + '-tab').classList.add('active');
+        }
+
+        function switchStatTab(statType) {
+            // Remover clase active de todos los stat tabs
+            document.querySelectorAll('.stat-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Activar el stat tab seleccionado
+            event.target.closest('.stat-tab').classList.add('active');
+            
+            // Opcional: Cambiar automáticamente a la pestaña correspondiente de grupos
+            const tabMap = {
+                'total': null, // No cambia de pestaña
+                'success': 'successful',
+                'approval': 'approval',
+                'failed': 'failed',
+                'pending': 'pending'
+            };
+            
+            if (tabMap[statType]) {
+                // Simular click en la pestaña correspondiente
+                const targetTab = document.querySelector(`.tab[onclick*="${tabMap[statType]}"]`);
+                if (targetTab) {
+                    targetTab.click();
+                }
+            }
         }
     </script>
 </body>

@@ -13,10 +13,15 @@ class GroupPermissionChecker {
      */
     async checkGroupPermissions(groupId) {
         try {
+            console.log(`\n🔍 Verificando permisos del grupo: ${groupId}`);
+            
             // Obtener información del grupo
             const chat = await this.client.getChatById(groupId);
+            console.log(`   📋 Nombre: ${chat.name}`);
+            console.log(`   👥 Participantes: ${chat.participants ? chat.participants.length : 'N/A'}`);
             
             if (!chat.isGroup) {
+                console.log(`   ❌ No es un grupo`);
                 return {
                     canSend: false,
                     reason: 'No es un grupo',
@@ -30,6 +35,7 @@ class GroupPermissionChecker {
             const isParticipant = participants.some(p => p.id._serialized === myNumber);
 
             if (!isParticipant) {
+                console.log(`   ❌ Ya no estás en este grupo`);
                 return {
                     canSend: false,
                     reason: 'Ya no estás en este grupo',
@@ -37,8 +43,11 @@ class GroupPermissionChecker {
                 };
             }
 
+            console.log(`   ✅ Estás en el grupo`);
+
             // Verificar si el grupo está activo
             if (chat.archived) {
+                console.log(`   📦 Grupo archivado pero puedes enviar`);
                 return {
                     canSend: true,
                     reason: 'Grupo archivado pero puedes enviar',
@@ -50,11 +59,13 @@ class GroupPermissionChecker {
             // Verificar si solo admins pueden enviar mensajes
             // Usar la propiedad del chat directamente
             if (chat.groupMetadata && chat.groupMetadata.announce) {
+                console.log(`   👮 Grupo restringido a administradores`);
                 // Verificar si el usuario es admin
                 const myParticipant = participants.find(p => p.id._serialized === myNumber);
                 const isAdmin = myParticipant && myParticipant.isAdmin;
 
                 if (!isAdmin) {
+                    console.log(`   ❌ No eres administrador - No puedes enviar`);
                     return {
                         canSend: false,
                         reason: 'Solo administradores pueden enviar mensajes',
@@ -62,10 +73,13 @@ class GroupPermissionChecker {
                         isAdmin: false,
                         restrictedToAdmins: true
                     };
+                } else {
+                    console.log(`   ✅ Eres administrador - Puedes enviar`);
                 }
             }
 
             // Todo bien, puede enviar mensajes
+            console.log(`   ✅ Puedes enviar mensajes en este grupo`);
             return {
                 canSend: true,
                 reason: 'Puedes enviar mensajes',
@@ -75,7 +89,7 @@ class GroupPermissionChecker {
             };
 
         } catch (error) {
-            console.error(`Error al verificar permisos del grupo ${groupId}:`, error.message);
+            console.error(`\n❌ Error al verificar permisos del grupo ${groupId}:`, error.message);
             
             // Clasificar el error
             if (error.message.includes('not found') || error.message.includes('404')) {

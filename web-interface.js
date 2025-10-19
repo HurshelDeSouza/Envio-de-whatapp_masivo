@@ -48,31 +48,41 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const { phone } = req.body;
         
+        console.log('\n' + '='.repeat(60));
+        console.log('🔐 INICIO DE SESIÓN');
+        console.log('='.repeat(60));
+        
         if (!phone) {
+            console.log('❌ Número de teléfono no proporcionado');
             return res.status(400).json({ 
                 success: false, 
                 message: 'Número de teléfono requerido' 
             });
         }
 
-        console.log(`\n🔐 Intento de login: ${phone}`);
+        console.log(`📱 Número: ${phone}`);
 
         // Verificar si ya existe una sesión guardada
         const hasStored = sessionManager.hasStoredSession(phone);
         
         if (hasStored) {
-            console.log(`✅ Sesión encontrada para ${phone}`);
+            console.log(`✅ Sesión guardada encontrada`);
+            console.log(`🔄 Recuperando sesión...`);
             // Iniciar sesión existente
             await sessionManager.getSession(phone);
+            console.log('='.repeat(60) + '\n');
             res.json({ 
                 success: true, 
                 needsQR: false,
                 message: 'Sesión encontrada, conectando...' 
             });
         } else {
-            console.log(`📱 Primera vez para ${phone}, se requiere QR`);
+            console.log(`📱 Primera vez con este número`);
+            console.log(`🔄 Creando nueva sesión...`);
+            console.log(`⚠️  Se requerirá escanear código QR`);
             // Crear nueva sesión (mostrará QR)
             await sessionManager.getSession(phone);
+            console.log('='.repeat(60) + '\n');
             res.json({ 
                 success: true, 
                 needsQR: true,
@@ -81,7 +91,9 @@ app.post('/api/auth/login', async (req, res) => {
         }
         
     } catch (error) {
-        console.error('❌ Error en login:', error.message);
+        console.error('\n❌ Error en login:', error.message);
+        console.error(error.stack);
+        console.log('='.repeat(60) + '\n');
         res.status(500).json({ 
             success: false, 
             message: error.message 
@@ -179,7 +191,14 @@ app.post('/api/check-multiple-permissions', async (req, res) => {
     try {
         const { groupIds, phone } = req.body;
         
+        console.log('\n' + '='.repeat(60));
+        console.log('🔐 VERIFICACIÓN DE PERMISOS MÚLTIPLES');
+        console.log('='.repeat(60));
+        console.log(`📱 Usuario: ${phone}`);
+        console.log(`📊 Grupos a verificar: ${groupIds.length}`);
+        
         if (!groupIds || !phone || !Array.isArray(groupIds)) {
+            console.log('❌ Faltan parámetros requeridos');
             return res.status(400).json({ 
                 success: false, 
                 message: 'Faltan parámetros: groupIds (array) y phone son requeridos' 
@@ -190,24 +209,43 @@ app.post('/api/check-multiple-permissions', async (req, res) => {
         const session = await sessionManager.getSession(phone);
         
         if (!session || session.status !== 'ready') {
+            console.log('❌ WhatsApp no está conectado');
             return res.status(503).json({ 
                 success: false, 
                 message: 'WhatsApp no está conectado para este número' 
             });
         }
 
+        console.log('✅ Sesión de WhatsApp lista');
+        console.log('🔄 Iniciando verificación...\n');
+
         // Verificar permisos de todos los grupos
         const checker = new GroupPermissionChecker(session.client);
         const permissions = await checker.checkMultipleGroups(groupIds);
 
         // Guardar permisos en la base de datos
+        console.log('\n💾 Guardando permisos en base de datos...');
         const db = new DatabaseService();
+        let canSendCount = 0;
+        let cannotSendCount = 0;
+        
         for (const [groupId, permission] of Object.entries(permissions)) {
             db.updateGroupPermissions(groupId, permission.canSend, permission.reason);
+            if (permission.canSend) {
+                canSendCount++;
+            } else {
+                cannotSendCount++;
+            }
         }
         db.close();
 
-        console.log(`✅ Permisos verificados y guardados para ${groupIds.length} grupos`);
+        console.log('\n' + '='.repeat(60));
+        console.log('📊 RESUMEN DE VERIFICACIÓN');
+        console.log('='.repeat(60));
+        console.log(`✅ Pueden enviar mensajes: ${canSendCount}`);
+        console.log(`🚫 NO pueden enviar mensajes: ${cannotSendCount}`);
+        console.log(`💾 Total guardados en BD: ${groupIds.length}`);
+        console.log('='.repeat(60) + '\n');
 
         res.json({ 
             success: true, 
@@ -215,7 +253,8 @@ app.post('/api/check-multiple-permissions', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error al verificar permisos múltiples:', error.message);
+        console.error('\n❌ Error al verificar permisos múltiples:', error.message);
+        console.error(error.stack);
         res.status(500).json({ 
             success: false, 
             message: error.message 
