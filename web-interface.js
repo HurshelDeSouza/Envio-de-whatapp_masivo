@@ -6,13 +6,20 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
+const { Client, LocalAuth } = require('whatsapp-web.js');
 const DatabaseService = require('./src/database/DatabaseService');
+const MessageSenderService = require('./src/services/MessageSenderService');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
 const PORT = 3000;
+
+// Cliente de WhatsApp global
+let whatsappClient = null;
+let messageSenderService = null;
+let isWhatsAppReady = false;
 
 // Configurar archivos estáticos
 app.use(express.static('public'));
@@ -91,6 +98,53 @@ app.get('/api/groups/failed', (req, res) => {
     res.json(groups);
 });
 
+// API: Enviar mensaje a un grupo
+app.post('/api/send-message', async (req, res) => {
+    try {
+        const { groupId, message } = req.body;
+        
+        if (!groupId || !message) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Faltan parámetros: groupId y message son requeridos' 
+            });
+        }
+
+        if (!isWhatsAppReady || !messageSenderService) {
+            return res.status(503).json({ 
+                success: false, 
+                message: 'WhatsApp no está conectado. Por favor espera a que se conecte.' 
+            });
+        }
+
+        console.log('\n' + '='.repeat(60));
+        console.log('📤 Enviando mensaje a grupo...');
+        console.log('='.repeat(60));
+        console.log(`Grupo ID: ${groupId}`);
+        console.log(`Mensaje: ${message.substring(0, 50)}...`);
+        console.log('='.repeat(60) + '\n');
+
+        // Enviar mensaje usando el servicio
+        const result = await messageSenderService.sendMessageToGroup(groupId, message);
+
+        if (result.success) {
+            io.emit('message-sent', { 
+                groupId: groupId,
+                message: 'Mensaje enviado exitosamente' 
+            });
+        }
+
+        res.json(result);
+        
+    } catch (error) {
+        console.error('❌ Error al enviar mensaje:', error.message);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
 // API: Ejecutar proceso de unirse a grupos
 app.post('/api/join-group', async (req, res) => {
     try {
@@ -133,6 +187,51 @@ io.on('connection', (socket) => {
     });
 });
 
+// Inicializar cliente de WhatsApp
+function initializeWhatsApp() {
+    console.log('\n🔄 Inicializando cliente de WhatsApp...');
+    
+    whatsappClient = new Client({
+        authStrategy: new LocalAuth({
+            dataPath: './.wwebjs_auth'
+        }),
+        puppeteer: {
+            headless: false,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-blink-features=AutomationControlled'
+            ]
+        }
+    });
+
+    whatsappClient.on('qr', (qr) => {
+        console.log('\n📱 Escanea el código QR con WhatsApp (si es necesario)');
+        io.emit('whatsapp-qr', { message: 'Escanea el código QR' });
+    });
+
+    whatsappClient.on('authenticated', () => {
+        console.log('✅ WhatsApp autenticado');
+        io.emit('whatsapp-status', { status: 'authenticated' });
+    });
+
+    whatsappClient.on('ready', () => {
+        console.log('✅ WhatsApp conectado y listo para enviar mensajes!');
+        isWhatsAppReady = true;
+        messageSenderService = new MessageSenderService(whatsappClient);
+        io.emit('whatsapp-status', { status: 'ready' });
+    });
+
+    whatsappClient.on('disconnected', (reason) => {
+        console.log('⚠️ WhatsApp desconectado:', reason);
+        isWhatsAppReady = false;
+        io.emit('whatsapp-status', { status: 'disconnected' });
+    });
+
+    whatsappClient.initialize();
+}
+
 // Iniciar servidor
 server.listen(PORT, () => {
     console.log('='.repeat(60));
@@ -142,9 +241,12 @@ server.listen(PORT, () => {
     console.log('\n✨ Funcionalidades disponibles:');
     console.log('   - Ver estadísticas en tiempo real');
     console.log('   - Lista de grupos exitosos');
-    console.log('   - Lista de grupos pendientes');
+    console.log('   - Enviar mensajes a grupos');
     console.log('   - Gráficos y visualizaciones');
     console.log('\n⚠️  Presiona Ctrl+C para detener el servidor\n');
+    
+    // Inicializar WhatsApp después de que el servidor esté listo
+    initializeWhatsApp();
 });
 
 module.exports = { io };
