@@ -1057,15 +1057,29 @@
                     closeModal();
                 }
             });
+
+            const logoutModal = document.getElementById('logout-modal');
+            logoutModal.addEventListener('click', function(e) {
+                if (e.target === logoutModal) {
+                    closeLogoutModal();
+                }
+            });
         });
 
         function logout() {
-            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-                localStorage.removeItem('whatsapp_phone');
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('username');
-                window.location.href = '/login';
-            }
+            // Mostrar modal de cerrar sesión
+            document.getElementById('logout-modal').classList.add('active');
+        }
+
+        function confirmLogout() {
+            localStorage.removeItem('whatsapp_phone');
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('username');
+            window.location.href = '/login';
+        }
+
+        function closeLogoutModal() {
+            document.getElementById('logout-modal').classList.remove('active');
         }
 
         function displayPendingGroups(groups) {
@@ -1226,7 +1240,7 @@
         }
     </script>
 
-    <!-- Modal personalizado -->
+    <!-- Modal personalizado - Cambiar Número -->
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-icon">🔄</div>
@@ -1237,6 +1251,23 @@
                     Sí, cambiar
                 </button>
                 <button class="modal-btn modal-btn-cancel" onclick="closeModal()">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal personalizado - Cerrar Sesión -->
+    <div id="logout-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-icon">🚪</div>
+            <h2 class="modal-title">Cerrar Sesión</h2>
+            <p class="modal-message">¿Estás seguro de que deseas cerrar sesión?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-confirm" onclick="confirmLogout()">
+                    Sí, cerrar sesión
+                </button>
+                <button class="modal-btn modal-btn-cancel" onclick="closeLogoutModal()">
                     Cancelar
                 </button>
             </div>
