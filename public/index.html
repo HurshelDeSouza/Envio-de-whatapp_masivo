@@ -299,22 +299,6 @@
             color: #666;
         }
 
-        .refresh-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 1em;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: background 0.3s;
-        }
-
-        .refresh-btn:hover {
-            background: #5568d3;
-        }
-
         @media (max-width: 768px) {
             .tabs {
                 flex-direction: column;
@@ -398,28 +382,24 @@
             </div>
 
             <div class="tab-content active" id="successful-tab">
-                <button class="refresh-btn" onclick="loadData()">🔄 Actualizar</button>
                 <div class="group-list" id="successful-list">
                     <div class="loading">Cargando...</div>
                 </div>
             </div>
 
             <div class="tab-content" id="approval-tab">
-                <button class="refresh-btn" onclick="loadData()">🔄 Actualizar</button>
                 <div class="group-list" id="approval-list">
                     <div class="loading">Cargando...</div>
                 </div>
             </div>
 
             <div class="tab-content" id="failed-tab">
-                <button class="refresh-btn" onclick="loadData()">🔄 Actualizar</button>
                 <div class="group-list" id="failed-list">
                     <div class="loading">Cargando...</div>
                 </div>
             </div>
 
             <div class="tab-content" id="pending-tab">
-                <button class="refresh-btn" onclick="loadData()">🔄 Actualizar</button>
                 <div class="group-list" id="pending-list">
                     <div class="loading">Cargando...</div>
                 </div>
