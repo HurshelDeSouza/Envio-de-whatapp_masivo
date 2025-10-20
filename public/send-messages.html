@@ -384,7 +384,7 @@
                                 </button>
                                 
                                 <div style="display: flex; gap: 10px;">
-                                    <button onclick="uploadNumbersFile()" style="display: flex; align-items: center; gap: 5px; padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;">
+                                    <button onclick="uploadNumbersFile()" style="display: flex; align-items: center; gap: 5px; padding: 8px 16px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;">
                                         📤 Subir Excel
                                     </button>
                                     <select style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; font-size: 0.9em; min-width: 180px; color: #666;">
@@ -709,7 +709,37 @@
         }
 
         function showExampleNumbers() {
-            document.getElementById('numbers-input').value = '+15062345678, +15062876543\n+15063456789';
+            // Descargar template de Excel
+            downloadExcelTemplate();
+        }
+
+        function downloadExcelTemplate() {
+            // Crear datos de ejemplo para el template
+            const data = [
+                ['Phone Number'],
+                ['5062345678'],
+                ['5062876543'],
+                ['5063456789'],
+                ['5064567890']
+            ];
+            
+            // Convertir a CSV (compatible con Excel)
+            const csvContent = data.map(row => row.join(',')).join('\n');
+            
+            // Crear blob y descargar
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'template_numbers.csv');
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showStatus('success', '✅ Template descargado exitosamente');
         }
 
         function uploadNumbersFile() {
