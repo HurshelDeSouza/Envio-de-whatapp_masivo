@@ -653,15 +653,33 @@
                                     
                                     <!-- Botones de campañas -->
                                     <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
-                                        <button onclick="viewUpcomingCampaigns()" style="width: 100%; padding: 12px 20px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 8px; font-weight: 600; font-size: 1em; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='white'">
-                                            <span>Ver campañas programadas</span>
-                                            <span style="font-size: 0.8em;">▼</span>
-                                        </button>
+                                        <div style="position: relative;">
+                                            <button onclick="toggleUpcomingCampaigns()" id="upcoming-campaigns-btn" style="width: 100%; padding: 12px 20px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 8px; font-weight: 600; font-size: 1em; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='white'">
+                                                <span>Ver campañas programadas</span>
+                                                <span style="font-size: 0.8em;">▼</span>
+                                            </button>
+                                            
+                                            <!-- Dropdown de campañas programadas -->
+                                            <div id="upcoming-campaigns-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 5px; z-index: 1000; max-height: 300px; overflow-y: auto;">
+                                                <div style="padding: 20px; color: #9ca3af; text-align: center; font-size: 0.95em;">
+                                                    No hay campañas programadas
+                                                </div>
+                                            </div>
+                                        </div>
                                         
-                                        <button onclick="resumePausedCampaigns()" style="width: 100%; padding: 12px 20px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 8px; font-weight: 600; font-size: 1em; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='white'">
-                                            <span>Reanudar campañas pausadas</span>
-                                            <span style="font-size: 0.8em;">▼</span>
-                                        </button>
+                                        <div style="position: relative;">
+                                            <button onclick="togglePausedCampaigns()" id="paused-campaigns-btn" style="width: 100%; padding: 12px 20px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 8px; font-weight: 600; font-size: 1em; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='white'">
+                                                <span>Reanudar campañas pausadas</span>
+                                                <span style="font-size: 0.8em;">▼</span>
+                                            </button>
+                                            
+                                            <!-- Dropdown de campañas pausadas -->
+                                            <div id="paused-campaigns-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 5px; z-index: 1000; max-height: 300px; overflow-y: auto;">
+                                                <div style="padding: 20px; color: #9ca3af; text-align: center; font-size: 0.95em;">
+                                                    Sin campañas pausadas
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -1708,15 +1726,32 @@
             }
         }
 
-        function viewUpcomingCampaigns() {
-            alert('Mostrando campañas programadas...\n(Funcionalidad en desarrollo)');
-            // Aquí puedes agregar la lógica para mostrar las campañas programadas
+        function toggleUpcomingCampaigns() {
+            const dropdown = document.getElementById('upcoming-campaigns-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
         }
 
-        function resumePausedCampaigns() {
-            alert('Mostrando campañas pausadas...\n(Funcionalidad en desarrollo)');
-            // Aquí puedes agregar la lógica para reanudar campañas pausadas
+        function togglePausedCampaigns() {
+            const dropdown = document.getElementById('paused-campaigns-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
         }
+
+        // Cerrar los dropdowns de campañas al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const upcomingDropdown = document.getElementById('upcoming-campaigns-dropdown');
+            const upcomingBtn = document.getElementById('upcoming-campaigns-btn');
+            
+            if (upcomingDropdown && upcomingBtn && !upcomingDropdown.contains(event.target) && !upcomingBtn.contains(event.target)) {
+                upcomingDropdown.style.display = 'none';
+            }
+
+            const pausedDropdown = document.getElementById('paused-campaigns-dropdown');
+            const pausedBtn = document.getElementById('paused-campaigns-btn');
+            
+            if (pausedDropdown && pausedBtn && !pausedDropdown.contains(event.target) && !pausedBtn.contains(event.target)) {
+                pausedDropdown.style.display = 'none';
+            }
+        });
 
         // Funciones para el slider de delay
         function updateSliderValue() {
