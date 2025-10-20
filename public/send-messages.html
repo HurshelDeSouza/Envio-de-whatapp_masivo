@@ -401,7 +401,7 @@
                     </div>
 
                     <!-- Área de mensaje con opciones de formato -->
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top: 20px;">
                         <label>Introducir mensaje</label>
                         <div style="border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
                             <!-- Barra de formato -->
@@ -439,6 +439,7 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
                     </div>
                     
                     <!-- COLUMNA DERECHA - Opciones Avanzadas -->
@@ -582,64 +583,7 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Mensaje</label>
-                    <textarea id="message" placeholder="Escribe tu mensaje aquí..."></textarea>
-                </div>
 
-                <div class="options-section">
-                    <h3>⚙️ Opciones Avanzadas</h3>
-
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="enable-delays" checked>
-                        <label for="enable-delays">Agregar intervalos de tiempo entre mensajes</label>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Delay entre mensajes (segundos)</label>
-                        <div class="number-input">
-                            <input type="number" id="delay-min" value="5" min="1" max="60">
-                            <span>a</span>
-                            <input type="number" id="delay-max" value="15" min="1" max="60">
-                        </div>
-                    </div>
-
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="enable-batches" checked>
-                        <label for="enable-batches">Agregar lotes (Recomendado)</label>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Tamaño de lote</label>
-                        <input type="number" id="batch-size" value="50" min="10" max="200">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Pausa entre lotes (minutos)</label>
-                        <input type="number" id="batch-delay" value="30" min="5" max="120">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Pausa cada X mensajes</label>
-                        <input type="number" id="pause-every" value="50" min="10" max="100">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Duración de pausa (minutos)</label>
-                        <input type="number" id="pause-duration" value="10" min="5" max="60">
-                    </div>
-                </div>
-
-                <button class="btn-primary" onclick="sendCampaign()">
-                    📤 Enviar Mensajes
-                </button>
-
-                <div class="campaign-controls" id="campaign-controls" style="display: none;">
-                    <button class="btn-primary btn-pause" onclick="pauseCampaign()">⏸️ Pausar</button>
-                    <button class="btn-primary btn-stop" onclick="stopCampaign()">🛑 Detener</button>
-                </div>
-
-                <div id="status-message" class="status-message"></div>
             </div>
 
             <!-- Tab Content: Templates -->
