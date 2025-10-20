@@ -392,9 +392,23 @@
                                     <button onclick="uploadNumbersFile()" style="display: flex; align-items: center; gap: 5px; padding: 8px 16px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;">
                                         📤 Subir Excel
                                     </button>
-                                    <select style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; font-size: 0.9em; min-width: 180px; color: #666;">
-                                        <option>Campaign Numbers</option>
-                                    </select>
+                                    
+                                    <div style="position: relative;">
+                                        <button onclick="toggleCampaignNumbersMenu()" id="campaign-numbers-btn" style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; font-size: 0.9em; min-width: 180px; color: #666; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                            <span>Campaign Numbers</span>
+                                            <span style="font-size: 0.8em;">▼</span>
+                                        </button>
+                                        
+                                        <!-- Menú desplegable de Campaign Numbers -->
+                                        <div id="campaign-numbers-dropdown" style="display: none; position: absolute; bottom: 100%; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 250px; margin-bottom: 5px; z-index: 1000;">
+                                            <div style="padding: 15px; color: #9ca3af; text-align: center; border-bottom: 1px solid #e5e7eb; font-size: 1.1em;">
+                                                ¡Nada que mostrar!
+                                            </div>
+                                            <div onclick="showAddCampaignNumberModal()" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">
+                                                📋 <span style="color: #10b981;">Add Template</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -530,6 +544,28 @@
                         
                         <button onclick="saveTemplate()" style="background: #26a69a; color: white; border: none; padding: 15px 40px; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; width: 100%;">
                             Save Template
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal: Add Campaign Numbers -->
+                <div id="add-campaign-numbers-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+                    <div style="background: #d1e7dd; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%; position: relative;">
+                        <button onclick="closeAddCampaignNumbersModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 2em; cursor: pointer; color: #333;">×</button>
+                        
+                        <h2 style="margin-bottom: 20px; color: #333;">Save Campaign Numbers</h2>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <textarea id="campaign-numbers-content" placeholder="Escribe tu plantilla aquí..." style="width: 100%; min-height: 200px; padding: 15px; border: 2px solid #b8dac6; border-radius: 8px; font-size: 1em; resize: vertical; font-family: inherit; background: white;"></textarea>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                            <label style="color: #333; font-weight: bold;">Nombre de la campaña</label>
+                            <input type="text" id="campaign-numbers-name" placeholder="Nombre de la campaña" style="flex: 1; padding: 12px; border: 2px solid #b8dac6; border-radius: 8px; font-size: 1em; background: white;">
+                        </div>
+                        
+                        <button onclick="saveCampaignNumbers()" style="background: #26a69a; color: white; border: none; padding: 15px 40px; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; width: 100%;">
+                            Save Campaign Numbers
                         </button>
                     </div>
                 </div>
@@ -1403,6 +1439,79 @@
             // Cargar estadísticas desde el servidor
             console.log('Cargando estadísticas...');
         }
+
+        // Funciones para Campaign Numbers
+        function toggleCampaignNumbersMenu() {
+            const dropdown = document.getElementById('campaign-numbers-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showAddCampaignNumberModal() {
+            document.getElementById('campaign-numbers-dropdown').style.display = 'none';
+            document.getElementById('add-campaign-numbers-modal').style.display = 'flex';
+        }
+
+        function closeAddCampaignNumbersModal() {
+            document.getElementById('add-campaign-numbers-modal').style.display = 'none';
+            document.getElementById('campaign-numbers-content').value = '';
+            document.getElementById('campaign-numbers-name').value = '';
+        }
+
+        function saveCampaignNumbers() {
+            const content = document.getElementById('campaign-numbers-content').value.trim();
+            const name = document.getElementById('campaign-numbers-name').value.trim();
+            
+            if (!content) {
+                alert('Por favor escribe el contenido de la plantilla');
+                return;
+            }
+            
+            if (!name) {
+                alert('Por favor escribe un nombre para la plantilla');
+                return;
+            }
+            
+            // Aquí puedes agregar la lógica para guardar en el servidor
+            fetch('/api/campaign-numbers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    name: name, 
+                    content: content,
+                    phone: phone
+                })
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    alert('✅ Campaign Numbers guardado exitosamente');
+                    closeAddCampaignNumbersModal();
+                    // Recargar la lista de campaign numbers
+                    loadCampaignNumbers();
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            })
+            .catch(error => {
+                alert('❌ Error al guardar: ' + error.message);
+            });
+        }
+
+        function loadCampaignNumbers() {
+            // Función para cargar la lista de campaign numbers guardados
+            // Se puede implementar cuando tengas el endpoint del servidor
+            console.log('Cargando campaign numbers...');
+        }
+
+        // Cerrar el menú de Campaign Numbers si se hace clic fuera de él
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('campaign-numbers-dropdown');
+            const btn = document.getElementById('campaign-numbers-btn');
+            
+            if (dropdown && btn && !dropdown.contains(event.target) && !btn.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
