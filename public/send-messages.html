@@ -340,45 +340,58 @@
                     <div class="form-group">
                         <label>Ingrese números para enviar mensajes</label>
                         
-                        <!-- Selector de código de país con bandera -->
-                        <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px;">
-                            <!-- Custom Country Selector -->
-                            <div style="position: relative; width: 180px;">
-                                <div id="country-selector-btn" onclick="toggleCountryDropdown()" style="padding: 10px 12px; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 1em;">
-                                    <img id="selected-flag-img" src="https://flagcdn.com/w40/ca.png" alt="CA" style="width: 28px; height: 20px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                    <span id="selected-code" style="color: #10b981; font-weight: bold;">+1</span>
-                                    <span style="margin-left: auto; color: #666;">▼</span>
-                                </div>
-                                
-                                <!-- Dropdown de países -->
-                                <div id="country-dropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 320px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 5px; z-index: 1000; max-height: 400px; overflow: hidden;">
-                                    <!-- Barra de búsqueda -->
-                                    <div style="padding: 10px; border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
-                                        <input type="text" id="country-search" placeholder="🔍 Buscar país..." style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9em;" oninput="filterCountries()" onclick="event.stopPropagation()">
+                        <!-- Contenedor tipo textarea con todo integrado -->
+                        <div style="border: 2px solid #d1d5db; border-radius: 10px; background: white; overflow: hidden;">
+                            
+                            <!-- Header con selector de país -->
+                            <div style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb; background: #fafafa;">
+                                <div style="position: relative; display: inline-block;">
+                                    <div id="country-selector-btn" onclick="toggleCountryDropdown()" style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.95em;">
+                                        <img id="selected-flag-img" src="https://flagcdn.com/w40/ca.png" alt="CA" style="width: 26px; height: 18px; border-radius: 2px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                                        <span id="selected-code" style="color: #10b981; font-weight: bold;">+1</span>
+                                        <span style="margin-left: 5px; color: #666; font-size: 0.8em;">▼</span>
                                     </div>
                                     
-                                    <!-- Lista de países -->
-                                    <div id="countries-list" style="max-height: 350px; overflow-y: auto;">
-                                        <!-- Los países se cargarán aquí -->
+                                    <!-- Dropdown de países -->
+                                    <div id="country-dropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 320px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 5px; z-index: 1000; max-height: 400px; overflow: hidden;">
+                                        <!-- Barra de búsqueda -->
+                                        <div style="padding: 10px; border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
+                                            <input type="text" id="country-search" placeholder="🔍 Buscar país..." style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9em;" oninput="filterCountries()" onclick="event.stopPropagation()">
+                                        </div>
+                                        
+                                        <!-- Lista de países -->
+                                        <div id="countries-list" style="max-height: 350px; overflow-y: auto;">
+                                            <!-- Los países se cargarán aquí -->
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div style="flex: 1;">
-                                <p style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
+                            <!-- Área de contenido con texto de ayuda y textarea -->
+                            <div style="padding: 15px;">
+                                <p style="color: #9ca3af; font-size: 0.9em; margin-bottom: 10px; line-height: 1.4;">
                                     Enter numbers separated by comma or one below the other.<br>
-                                    Eg. 5062345678, 5062876543
+                                    Eg. 51234567, 51765432
                                 </p>
-                                <textarea id="numbers-input" placeholder="Ingrese números aquí..." style="width: 100%; min-height: 100px; font-family: monospace; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1em;"></textarea>
+                                
+                                <textarea id="numbers-input" placeholder="Ingrese números aquí..." style="width: 100%; min-height: 120px; font-family: monospace; padding: 0; border: none; font-size: 0.95em; background: transparent; resize: none; outline: none; color: #333;"></textarea>
                             </div>
-                        </div>
-                        
-                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                            <button class="btn-secondary" onclick="showExampleNumbers()">📋 Ejemplo</button>
-                            <button class="btn-secondary" onclick="uploadNumbersFile()">📤 Subir Excel</button>
-                            <select style="padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer;">
-                                <option>Campaign Numbers</option>
-                            </select>
+                            
+                            <!-- Footer con botones -->
+                            <div style="padding: 12px 15px; border-top: 1px solid #e5e7eb; background: #fafafa; display: flex; gap: 10px; align-items: center; justify-content: space-between;">
+                                <button onclick="showExampleNumbers()" style="display: flex; align-items: center; gap: 5px; padding: 8px 16px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;">
+                                    📋 Ejemplo
+                                </button>
+                                
+                                <div style="display: flex; gap: 10px;">
+                                    <button onclick="uploadNumbersFile()" style="display: flex; align-items: center; gap: 5px; padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;">
+                                        📤 Subir Excel
+                                    </button>
+                                    <select style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; font-size: 0.9em; min-width: 180px; color: #666;">
+                                        <option>Campaign Numbers</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
