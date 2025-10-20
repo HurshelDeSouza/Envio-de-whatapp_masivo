@@ -601,10 +601,11 @@
                                             
                                             <div id="custom-option" style="display: none; padding-left: 28px;">
                                                 <div style="display: flex; gap: 10px; align-items: center;">
+                                                    <span style="color: #666; font-weight: 500;">De:</span>
                                                     <input type="number" id="delay-min" value="5" min="1" max="60" step="1" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
-                                                    <span style="color: #666;">a</span>
+                                                    <span style="color: #666; font-weight: 500;">A:</span>
                                                     <input type="number" id="delay-max" value="15" min="1" max="60" step="1" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
-                                                    <span style="color: #666; font-weight: 500;">sec</span>
+                                                    <span style="color: #666; font-weight: 500;">segundos</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1681,14 +1682,26 @@
             const mode = document.querySelector('input[name="delay-mode"]:checked').value;
             const customOption = document.getElementById('custom-option');
             const sliderOption = document.getElementById('slider-option');
+            const delaySlider = document.getElementById('delay-slider');
+            const delaySliderValue = document.getElementById('delay-slider-value');
             
             // Mostrar/ocultar opciones según el modo seleccionado
             if (mode === 'custom') {
                 customOption.style.display = 'block';
                 sliderOption.style.display = 'flex';
+                // Deshabilitar el slider cuando está en modo personalizado
+                delaySlider.disabled = true;
+                delaySliderValue.disabled = true;
+                sliderOption.style.opacity = '0.5';
+                sliderOption.style.pointerEvents = 'none';
             } else if (mode === 'slider') {
                 customOption.style.display = 'none';
                 sliderOption.style.display = 'flex';
+                // Habilitar el slider cuando está en modo fijo
+                delaySlider.disabled = false;
+                delaySliderValue.disabled = false;
+                sliderOption.style.opacity = '1';
+                sliderOption.style.pointerEvents = 'auto';
             } else {
                 customOption.style.display = 'none';
                 sliderOption.style.display = 'none';
