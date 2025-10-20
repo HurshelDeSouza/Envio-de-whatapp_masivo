@@ -337,11 +337,16 @@
 
                 <!-- Sección para Numbers -->
                 <div id="section-numbers" style="display: none;">
-                    <div class="form-group">
-                        <label>Ingrese números para enviar mensajes</label>
+                    <!-- Layout de dos columnas -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         
-                        <!-- Contenedor tipo textarea con todo integrado -->
-                        <div style="border: 2px solid #d1d5db; border-radius: 10px; background: white; overflow: hidden;">
+                        <!-- COLUMNA IZQUIERDA -->
+                        <div>
+                            <div class="form-group">
+                                <label>Ingrese números para enviar mensajes</label>
+                                
+                                <!-- Contenedor tipo textarea con todo integrado -->
+                                <div style="border: 2px solid #d1d5db; border-radius: 10px; background: white; overflow: hidden;">
                             
                             <!-- Header con selector de país -->
                             <div style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb; background: #fafafa;">
@@ -435,6 +440,75 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- COLUMNA DERECHA - Opciones Avanzadas -->
+                    <div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
+                                <span style="font-size: 1.2em;">⚙️</span>
+                                <span style="font-weight: bold; font-size: 1.1em;">Opciones Avanzadas</span>
+                            </label>
+                            
+                            <div style="border: 2px solid #e5e7eb; border-radius: 10px; padding: 20px; background: white;">
+                                
+                                <!-- Agregar intervalos de tiempo -->
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="enable-delays" checked style="width: 18px; height: 18px; cursor: pointer;">
+                                        <span style="font-weight: 600; color: #333;">Agregar intervalos de tiempo entre mensajes</span>
+                                    </label>
+                                    
+                                    <div style="margin-top: 10px;">
+                                        <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 5px;">Delay entre mensajes (segundos)</label>
+                                        <div style="display: flex; gap: 10px; align-items: center;">
+                                            <input type="number" id="delay-min" value="5" min="1" max="60" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
+                                            <span style="color: #666;">a</span>
+                                            <input type="number" id="delay-max" value="15" min="1" max="60" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Agregar lotes -->
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="enable-batches" checked style="width: 18px; height: 18px; cursor: pointer;">
+                                        <span style="font-weight: 600; color: #333;">Agregar lotes <span style="color: #10b981;">(Recomendado)</span></span>
+                                    </label>
+                                    
+                                    <div style="margin-top: 10px;">
+                                        <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 5px;">Tamaño de lote</label>
+                                        <input type="number" id="batch-size" value="50" min="10" max="200" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em; margin-bottom: 10px;">
+                                        
+                                        <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 5px;">Pausa entre lotes (minutos)</label>
+                                        <input type="number" id="batch-delay" value="30" min="5" max="120" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
+                                    </div>
+                                </div>
+                                
+                                <!-- Pausa cada X mensajes -->
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 5px;">Pausa cada X mensajes</label>
+                                    <input type="number" id="pause-every" value="50" min="10" max="100" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em; margin-bottom: 10px;">
+                                    
+                                    <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 5px;">Duración de pausa (minutos)</label>
+                                    <input type="number" id="pause-duration" value="10" min="5" max="60" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
+                                </div>
+                                
+                                <!-- Botón Enviar Mensajes -->
+                                <button class="btn-primary" onclick="sendCampaign()" style="width: 100%; margin-top: 10px;">
+                                    📤 Enviar Mensajes
+                                </button>
+                                
+                                <div class="campaign-controls" id="campaign-controls" style="display: none; margin-top: 10px;">
+                                    <button class="btn-primary btn-pause" onclick="pauseCampaign()" style="width: 100%; margin-bottom: 10px;">⏸️ Pausar</button>
+                                    <button class="btn-primary btn-stop" onclick="stopCampaign()" style="width: 100%;">🛑 Detener</button>
+                                </div>
+                                
+                                <div id="status-message" class="status-message"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
                 </div>
 
                 <!-- Modal: Add Template -->
