@@ -1412,9 +1412,27 @@
         }
 
         async function sendCampaign() {
-            if (selectedGroups.length === 0) {
-                showStatus('error', 'Por favor selecciona al menos un grupo');
-                return;
+            // Obtener el modo seleccionado (numbers, groups, contacts)
+            const selectedMode = document.querySelector('input[name="send-mode"]:checked').value;
+            
+            // Validar según el modo seleccionado
+            if (selectedMode === 'numbers') {
+                const numbersInput = document.getElementById('numbers-input').value.trim();
+                if (!numbersInput) {
+                    showStatus('error', 'Por favor selecciona al menos un número');
+                    return;
+                }
+            } else if (selectedMode === 'groups') {
+                if (selectedGroups.length === 0) {
+                    showStatus('error', 'Por favor selecciona al menos un grupo');
+                    return;
+                }
+            } else if (selectedMode === 'contacts') {
+                const selectedContacts = document.querySelectorAll('#contacts-select option:checked');
+                if (selectedContacts.length === 0) {
+                    showStatus('error', 'Por favor selecciona al menos un contacto');
+                    return;
+                }
             }
 
             const message = document.getElementById('message').value.trim();
