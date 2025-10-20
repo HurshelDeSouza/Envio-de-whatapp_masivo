@@ -294,40 +294,77 @@
         input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
-            height: 8px;
-            border-radius: 5px;
+            height: 18px;
+            border-radius: 10px;
             outline: none;
+            background: transparent;
+            padding: 4px 0;
         }
 
+        /* Track para WebKit (Chrome, Safari, Edge) */
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 18px;
+            border-radius: 10px;
+        }
+
+        /* Thumb para WebKit */
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 24px;
-            height: 24px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: #10b981;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+            margin-top: 0px;
+            position: relative;
+            z-index: 2;
         }
 
         input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:active {
             transform: scale(1.1);
         }
 
+        /* Track para Firefox */
+        input[type="range"]::-moz-range-track {
+            height: 18px;
+            border-radius: 10px;
+            background: #e5e7eb;
+        }
+
+        /* Thumb para Firefox */
         input[type="range"]::-moz-range-thumb {
-            width: 24px;
-            height: 24px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: #10b981;
             cursor: pointer;
             border: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
         }
 
         input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        input[type="range"]::-moz-range-thumb:active {
             transform: scale(1.1);
+        }
+
+        /* Progress para Firefox */
+        input[type="range"]::-moz-range-progress {
+            background: #10b981;
+            height: 18px;
+            border-radius: 10px;
         }
 
         /* Mantener las flechitas de los inputs numéricos */
@@ -539,8 +576,8 @@
                                                 <span style="font-weight: 500; color: #333;">Fijo</span>
                                             </label>
                                             
-                                            <div id="slider-option" style="display: flex; align-items: center; gap: 15px; padding-left: 28px;">
-                                                <input type="range" id="delay-slider" min="1" max="60" value="3" step="1" oninput="updateSliderValue()" style="flex: 1; height: 8px; border-radius: 5px; background: linear-gradient(to right, #10b981 0%, #10b981 5%, #e5e7eb 5%, #e5e7eb 100%); outline: none; -webkit-appearance: none; appearance: none;">
+                                            <div id="slider-option" style="display: flex; align-items: center; gap: 15px; padding-left: 28px; padding-top: 10px; padding-bottom: 10px;">
+                                                <input type="range" id="delay-slider" min="1" max="60" value="3" step="1" oninput="updateSliderValue()" style="flex: 1; background: linear-gradient(to right, #10b981 0%, #10b981 5%, #e5e7eb 5%, #e5e7eb 100%);">
                                                 <input type="number" id="delay-slider-value" value="3" min="1" max="60" step="1" oninput="updateSliderFromInput()" style="width: 80px; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em; text-align: center;">
                                                 <span style="color: #666; font-weight: 500;">sec</span>
                                             </div>
