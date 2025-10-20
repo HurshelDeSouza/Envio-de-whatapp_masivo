@@ -18,6 +18,11 @@
             padding: 20px;
         }
 
+        /* Asegurar que los emojis se muestren correctamente */
+        .emoji, [id*="flag"], [id*="country"] {
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', 'Android Emoji', 'EmojiSymbols', sans-serif !important;
+        }
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -338,14 +343,15 @@
                         <!-- Selector de código de país con bandera -->
                         <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px;">
                             <!-- Custom Country Selector -->
-                            <div style="position: relative; width: 200px;">
-                                <div id="country-selector-btn" onclick="toggleCountryDropdown()" style="padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 1em;">
-                                    <span id="selected-country">🇨🇦 +1</span>
-                                    <span>▼</span>
+                            <div style="position: relative; width: 180px;">
+                                <div id="country-selector-btn" onclick="toggleCountryDropdown()" style="padding: 10px 12px; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 1em;">
+                                    <img id="selected-flag-img" src="https://flagcdn.com/w40/ca.png" alt="CA" style="width: 28px; height: 20px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                    <span id="selected-code" style="color: #10b981; font-weight: bold;">+1</span>
+                                    <span style="margin-left: auto; color: #666;">▼</span>
                                 </div>
                                 
                                 <!-- Dropdown de países -->
-                                <div id="country-dropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; max-width: 350px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 5px; z-index: 1000; max-height: 400px; overflow: hidden;">
+                                <div id="country-dropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 320px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 5px; z-index: 1000; max-height: 400px; overflow: hidden;">
                                     <!-- Barra de búsqueda -->
                                     <div style="padding: 10px; border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
                                         <input type="text" id="country-search" placeholder="🔍 Buscar país..." style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9em;" oninput="filterCountries()" onclick="event.stopPropagation()">
@@ -806,122 +812,122 @@
             });
         }
 
-        // Lista completa de países con códigos
+        // Lista completa de países con códigos ISO
         const countries = [
-            { name: 'Canada', code: '+1', flag: '🇨🇦', native: 'Canada' },
-            { name: 'United States', code: '+1', flag: '🇺🇸', native: 'United States' },
-            { name: 'Afghanistan', code: '+93', flag: '🇦🇫', native: 'افغانستان' },
-            { name: 'Albania', code: '+355', flag: '🇦🇱', native: 'Shqipëri' },
-            { name: 'Algeria', code: '+213', flag: '🇩🇿', native: 'الجزائر' },
-            { name: 'American Samoa', code: '+1', flag: '🇦🇸', native: 'American Samoa' },
-            { name: 'Andorra', code: '+376', flag: '🇦🇩', native: 'Andorra' },
-            { name: 'Angola', code: '+244', flag: '🇦🇴', native: 'Angola' },
-            { name: 'Argentina', code: '+54', flag: '🇦🇷', native: 'Argentina' },
-            { name: 'Armenia', code: '+374', flag: '🇦🇲', native: 'Հայաստան' },
-            { name: 'Australia', code: '+61', flag: '🇦🇺', native: 'Australia' },
-            { name: 'Austria', code: '+43', flag: '🇦🇹', native: 'Österreich' },
-            { name: 'Azerbaijan', code: '+994', flag: '🇦🇿', native: 'Azərbaycan' },
-            { name: 'Bahamas', code: '+1242', flag: '🇧🇸', native: 'Bahamas' },
-            { name: 'Bahrain', code: '+973', flag: '🇧🇭', native: 'البحرين' },
-            { name: 'Bangladesh', code: '+880', flag: '🇧🇩', native: 'বাংলাদেশ' },
-            { name: 'Barbados', code: '+1246', flag: '🇧🇧', native: 'Barbados' },
-            { name: 'Belarus', code: '+375', flag: '🇧🇾', native: 'Беларусь' },
-            { name: 'Belgium', code: '+32', flag: '🇧🇪', native: 'België' },
-            { name: 'Belize', code: '+501', flag: '🇧🇿', native: 'Belize' },
-            { name: 'Benin', code: '+229', flag: '🇧🇯', native: 'Bénin' },
-            { name: 'Bolivia', code: '+591', flag: '🇧🇴', native: 'Bolivia' },
-            { name: 'Bosnia', code: '+387', flag: '🇧🇦', native: 'Bosna i Hercegovina' },
-            { name: 'Botswana', code: '+267', flag: '🇧🇼', native: 'Botswana' },
-            { name: 'Brazil', code: '+55', flag: '🇧🇷', native: 'Brasil' },
-            { name: 'Bulgaria', code: '+359', flag: '🇧🇬', native: 'България' },
-            { name: 'Cambodia', code: '+855', flag: '🇰🇭', native: 'កម្ពុជា' },
-            { name: 'Cameroon', code: '+237', flag: '🇨🇲', native: 'Cameroun' },
-            { name: 'Chile', code: '+56', flag: '🇨🇱', native: 'Chile' },
-            { name: 'China', code: '+86', flag: '🇨🇳', native: '中国' },
-            { name: 'Colombia', code: '+57', flag: '🇨🇴', native: 'Colombia' },
-            { name: 'Costa Rica', code: '+506', flag: '🇨🇷', native: 'Costa Rica' },
-            { name: 'Croatia', code: '+385', flag: '🇭🇷', native: 'Hrvatska' },
-            { name: 'Cuba', code: '+53', flag: '🇨🇺', native: 'Cuba' },
-            { name: 'Cyprus', code: '+357', flag: '🇨🇾', native: 'Κύπρος' },
-            { name: 'Czech Republic', code: '+420', flag: '🇨🇿', native: 'Česká republika' },
-            { name: 'Denmark', code: '+45', flag: '🇩🇰', native: 'Danmark' },
-            { name: 'Dominican Republic', code: '+1809', flag: '🇩🇴', native: 'República Dominicana' },
-            { name: 'Ecuador', code: '+593', flag: '🇪🇨', native: 'Ecuador' },
-            { name: 'Egypt', code: '+20', flag: '🇪🇬', native: 'مصر' },
-            { name: 'El Salvador', code: '+503', flag: '🇸🇻', native: 'El Salvador' },
-            { name: 'Estonia', code: '+372', flag: '🇪🇪', native: 'Eesti' },
-            { name: 'Ethiopia', code: '+251', flag: '🇪🇹', native: 'ኢትዮጵያ' },
-            { name: 'Finland', code: '+358', flag: '🇫🇮', native: 'Suomi' },
-            { name: 'France', code: '+33', flag: '🇫🇷', native: 'France' },
-            { name: 'Germany', code: '+49', flag: '🇩🇪', native: 'Deutschland' },
-            { name: 'Ghana', code: '+233', flag: '🇬🇭', native: 'Ghana' },
-            { name: 'Greece', code: '+30', flag: '🇬🇷', native: 'Ελλάδα' },
-            { name: 'Guatemala', code: '+502', flag: '🇬🇹', native: 'Guatemala' },
-            { name: 'Haiti', code: '+509', flag: '🇭🇹', native: 'Haïti' },
-            { name: 'Honduras', code: '+504', flag: '🇭🇳', native: 'Honduras' },
-            { name: 'Hong Kong', code: '+852', flag: '🇭🇰', native: '香港' },
-            { name: 'Hungary', code: '+36', flag: '🇭🇺', native: 'Magyarország' },
-            { name: 'Iceland', code: '+354', flag: '🇮🇸', native: 'Ísland' },
-            { name: 'India', code: '+91', flag: '🇮🇳', native: 'भारत' },
-            { name: 'Indonesia', code: '+62', flag: '🇮🇩', native: 'Indonesia' },
-            { name: 'Iran', code: '+98', flag: '🇮🇷', native: 'ایران' },
-            { name: 'Iraq', code: '+964', flag: '🇮🇶', native: 'العراق' },
-            { name: 'Ireland', code: '+353', flag: '🇮🇪', native: 'Éire' },
-            { name: 'Israel', code: '+972', flag: '🇮🇱', native: 'ישראל' },
-            { name: 'Italy', code: '+39', flag: '🇮🇹', native: 'Italia' },
-            { name: 'Jamaica', code: '+1876', flag: '🇯🇲', native: 'Jamaica' },
-            { name: 'Japan', code: '+81', flag: '🇯🇵', native: '日本' },
-            { name: 'Jordan', code: '+962', flag: '🇯🇴', native: 'الأردن' },
-            { name: 'Kazakhstan', code: '+7', flag: '🇰🇿', native: 'Қазақстан' },
-            { name: 'Kenya', code: '+254', flag: '🇰🇪', native: 'Kenya' },
-            { name: 'Kuwait', code: '+965', flag: '🇰🇼', native: 'الكويت' },
-            { name: 'Latvia', code: '+371', flag: '🇱🇻', native: 'Latvija' },
-            { name: 'Lebanon', code: '+961', flag: '🇱🇧', native: 'لبنان' },
-            { name: 'Libya', code: '+218', flag: '🇱🇾', native: 'ليبيا' },
-            { name: 'Lithuania', code: '+370', flag: '🇱🇹', native: 'Lietuva' },
-            { name: 'Luxembourg', code: '+352', flag: '🇱🇺', native: 'Luxembourg' },
-            { name: 'Malaysia', code: '+60', flag: '🇲🇾', native: 'Malaysia' },
-            { name: 'Mexico', code: '+52', flag: '🇲🇽', native: 'México' },
-            { name: 'Morocco', code: '+212', flag: '🇲🇦', native: 'المغرب' },
-            { name: 'Netherlands', code: '+31', flag: '🇳🇱', native: 'Nederland' },
-            { name: 'New Zealand', code: '+64', flag: '🇳🇿', native: 'New Zealand' },
-            { name: 'Nicaragua', code: '+505', flag: '🇳🇮', native: 'Nicaragua' },
-            { name: 'Nigeria', code: '+234', flag: '🇳🇬', native: 'Nigeria' },
-            { name: 'Norway', code: '+47', flag: '🇳🇴', native: 'Norge' },
-            { name: 'Pakistan', code: '+92', flag: '🇵🇰', native: 'پاکستان' },
-            { name: 'Panama', code: '+507', flag: '🇵🇦', native: 'Panamá' },
-            { name: 'Paraguay', code: '+595', flag: '🇵🇾', native: 'Paraguay' },
-            { name: 'Peru', code: '+51', flag: '🇵🇪', native: 'Perú' },
-            { name: 'Philippines', code: '+63', flag: '🇵🇭', native: 'Philippines' },
-            { name: 'Poland', code: '+48', flag: '🇵🇱', native: 'Polska' },
-            { name: 'Portugal', code: '+351', flag: '🇵🇹', native: 'Portugal' },
-            { name: 'Puerto Rico', code: '+1787', flag: '🇵🇷', native: 'Puerto Rico' },
-            { name: 'Qatar', code: '+974', flag: '🇶🇦', native: 'قطر' },
-            { name: 'Romania', code: '+40', flag: '🇷🇴', native: 'România' },
-            { name: 'Russia', code: '+7', flag: '🇷🇺', native: 'Россия' },
-            { name: 'Saudi Arabia', code: '+966', flag: '🇸🇦', native: 'السعودية' },
-            { name: 'Serbia', code: '+381', flag: '🇷🇸', native: 'Србија' },
-            { name: 'Singapore', code: '+65', flag: '🇸🇬', native: 'Singapore' },
-            { name: 'Slovakia', code: '+421', flag: '🇸🇰', native: 'Slovensko' },
-            { name: 'Slovenia', code: '+386', flag: '🇸🇮', native: 'Slovenija' },
-            { name: 'South Africa', code: '+27', flag: '🇿🇦', native: 'South Africa' },
-            { name: 'South Korea', code: '+82', flag: '🇰🇷', native: '대한민국' },
-            { name: 'Spain', code: '+34', flag: '🇪🇸', native: 'España' },
-            { name: 'Sri Lanka', code: '+94', flag: '🇱🇰', native: 'ශ්‍රී ලංකා' },
-            { name: 'Sweden', code: '+46', flag: '🇸🇪', native: 'Sverige' },
-            { name: 'Switzerland', code: '+41', flag: '🇨🇭', native: 'Schweiz' },
-            { name: 'Syria', code: '+963', flag: '🇸🇾', native: 'سوريا' },
-            { name: 'Taiwan', code: '+886', flag: '🇹🇼', native: '台灣' },
-            { name: 'Thailand', code: '+66', flag: '🇹🇭', native: 'ไทย' },
-            { name: 'Tunisia', code: '+216', flag: '🇹🇳', native: 'تونس' },
-            { name: 'Turkey', code: '+90', flag: '🇹🇷', native: 'Türkiye' },
-            { name: 'Ukraine', code: '+380', flag: '🇺🇦', native: 'Україна' },
-            { name: 'United Arab Emirates', code: '+971', flag: '🇦🇪', native: 'الإمارات' },
-            { name: 'United Kingdom', code: '+44', flag: '🇬🇧', native: 'United Kingdom' },
-            { name: 'Uruguay', code: '+598', flag: '🇺🇾', native: 'Uruguay' },
-            { name: 'Venezuela', code: '+58', flag: '🇻🇪', native: 'Venezuela' },
-            { name: 'Vietnam', code: '+84', flag: '🇻🇳', native: 'Việt Nam' },
-            { name: 'Yemen', code: '+967', flag: '🇾🇪', native: 'اليمن' }
+            { name: 'Canada', code: '+1', iso: 'CA', native: 'Canada' },
+            { name: 'United States', code: '+1', iso: 'US', native: 'United States' },
+            { name: 'Afghanistan', code: '+93', iso: 'AF', native: 'افغانستان' },
+            { name: 'Albania', code: '+355', iso: 'AL', native: 'Shqipëri' },
+            { name: 'Algeria', code: '+213', iso: 'DZ', native: 'الجزائر' },
+            { name: 'American Samoa', code: '+1', iso: 'AS', native: 'American Samoa' },
+            { name: 'Andorra', code: '+376', iso: 'AD', native: 'Andorra' },
+            { name: 'Angola', code: '+244', iso: 'AO', native: 'Angola' },
+            { name: 'Argentina', code: '+54', iso: 'AR', native: 'Argentina' },
+            { name: 'Armenia', code: '+374', iso: 'AM', native: 'Հայաստան' },
+            { name: 'Australia', code: '+61', iso: 'AU', native: 'Australia' },
+            { name: 'Austria', code: '+43', iso: 'AT', native: 'Österreich' },
+            { name: 'Azerbaijan', code: '+994', iso: 'AZ', native: 'Azərbaycan' },
+            { name: 'Bahamas', code: '+1242', iso: 'BS', native: 'Bahamas' },
+            { name: 'Bahrain', code: '+973', iso: 'BH', native: 'البحرين' },
+            { name: 'Bangladesh', code: '+880', iso: 'BD', native: 'বাংলাদেশ' },
+            { name: 'Barbados', code: '+1246', iso: 'BB', native: 'Barbados' },
+            { name: 'Belarus', code: '+375', iso: 'BY', native: 'Беларусь' },
+            { name: 'Belgium', code: '+32', iso: 'BE', native: 'België' },
+            { name: 'Belize', code: '+501', iso: 'BZ', native: 'Belize' },
+            { name: 'Benin', code: '+229', iso: 'BJ', native: 'Bénin' },
+            { name: 'Bolivia', code: '+591', iso: 'BO', native: 'Bolivia' },
+            { name: 'Bosnia', code: '+387', iso: 'BA', native: 'Bosna i Hercegovina' },
+            { name: 'Botswana', code: '+267', iso: 'BW', native: 'Botswana' },
+            { name: 'Brazil', code: '+55', iso: 'BR', native: 'Brasil' },
+            { name: 'Bulgaria', code: '+359', iso: 'BG', native: 'България' },
+            { name: 'Cambodia', code: '+855', iso: 'KH', native: 'កម្ពុជា' },
+            { name: 'Cameroon', code: '+237', iso: 'CM', native: 'Cameroun' },
+            { name: 'Chile', code: '+56', iso: 'CL', native: 'Chile' },
+            { name: 'China', code: '+86', iso: 'CN', native: '中国' },
+            { name: 'Colombia', code: '+57', iso: 'CO', native: 'Colombia' },
+            { name: 'Costa Rica', code: '+506', iso: 'CR', native: 'Costa Rica' },
+            { name: 'Croatia', code: '+385', iso: 'HR', native: 'Hrvatska' },
+            { name: 'Cuba', code: '+53', iso: 'CU', native: 'Cuba' },
+            { name: 'Cyprus', code: '+357', iso: 'CY', native: 'Κύπρος' },
+            { name: 'Czech Republic', code: '+420', iso: 'CZ', native: 'Česká republika' },
+            { name: 'Denmark', code: '+45', iso: 'DK', native: 'Danmark' },
+            { name: 'Dominican Republic', code: '+1809', iso: 'DO', native: 'República Dominicana' },
+            { name: 'Ecuador', code: '+593', iso: 'EC', native: 'Ecuador' },
+            { name: 'Egypt', code: '+20', iso: 'EG', native: 'مصر' },
+            { name: 'El Salvador', code: '+503', iso: 'SV', native: 'El Salvador' },
+            { name: 'Estonia', code: '+372', iso: 'EE', native: 'Eesti' },
+            { name: 'Ethiopia', code: '+251', iso: 'ET', native: 'ኢትዮጵያ' },
+            { name: 'Finland', code: '+358', iso: 'FI', native: 'Suomi' },
+            { name: 'France', code: '+33', iso: 'FR', native: 'France' },
+            { name: 'Germany', code: '+49', iso: 'DE', native: 'Deutschland' },
+            { name: 'Ghana', code: '+233', iso: 'GH', native: 'Ghana' },
+            { name: 'Greece', code: '+30', iso: 'GR', native: 'Ελλάδα' },
+            { name: 'Guatemala', code: '+502', iso: 'GT', native: 'Guatemala' },
+            { name: 'Haiti', code: '+509', iso: 'HT', native: 'Haïti' },
+            { name: 'Honduras', code: '+504', iso: 'HN', native: 'Honduras' },
+            { name: 'Hong Kong', code: '+852', iso: 'HK', native: '香港' },
+            { name: 'Hungary', code: '+36', iso: 'HU', native: 'Magyarország' },
+            { name: 'Iceland', code: '+354', iso: 'IS', native: 'Ísland' },
+            { name: 'India', code: '+91', iso: 'IN', native: 'भारत' },
+            { name: 'Indonesia', code: '+62', iso: 'ID', native: 'Indonesia' },
+            { name: 'Iran', code: '+98', iso: 'IR', native: 'ایران' },
+            { name: 'Iraq', code: '+964', iso: 'IQ', native: 'العراق' },
+            { name: 'Ireland', code: '+353', iso: 'IE', native: 'Éire' },
+            { name: 'Israel', code: '+972', iso: 'IL', native: 'ישראל' },
+            { name: 'Italy', code: '+39', iso: 'IT', native: 'Italia' },
+            { name: 'Jamaica', code: '+1876', iso: 'JM', native: 'Jamaica' },
+            { name: 'Japan', code: '+81', iso: 'JP', native: '日本' },
+            { name: 'Jordan', code: '+962', iso: 'JO', native: 'الأردن' },
+            { name: 'Kazakhstan', code: '+7', iso: 'KZ', native: 'Қазақстан' },
+            { name: 'Kenya', code: '+254', iso: 'KE', native: 'Kenya' },
+            { name: 'Kuwait', code: '+965', iso: 'KW', native: 'الكويت' },
+            { name: 'Latvia', code: '+371', iso: 'LV', native: 'Latvija' },
+            { name: 'Lebanon', code: '+961', iso: 'LB', native: 'لبنان' },
+            { name: 'Libya', code: '+218', iso: 'LY', native: 'ليبيا' },
+            { name: 'Lithuania', code: '+370', iso: 'LT', native: 'Lietuva' },
+            { name: 'Luxembourg', code: '+352', iso: 'LU', native: 'Luxembourg' },
+            { name: 'Malaysia', code: '+60', iso: 'MY', native: 'Malaysia' },
+            { name: 'Mexico', code: '+52', iso: 'MX', native: 'México' },
+            { name: 'Morocco', code: '+212', iso: 'MA', native: 'المغرب' },
+            { name: 'Netherlands', code: '+31', iso: 'NL', native: 'Nederland' },
+            { name: 'New Zealand', code: '+64', iso: 'NZ', native: 'New Zealand' },
+            { name: 'Nicaragua', code: '+505', iso: 'NI', native: 'Nicaragua' },
+            { name: 'Nigeria', code: '+234', iso: 'NG', native: 'Nigeria' },
+            { name: 'Norway', code: '+47', iso: 'NO', native: 'Norge' },
+            { name: 'Pakistan', code: '+92', iso: 'PK', native: 'پاکستان' },
+            { name: 'Panama', code: '+507', iso: 'PA', native: 'Panamá' },
+            { name: 'Paraguay', code: '+595', iso: 'PY', native: 'Paraguay' },
+            { name: 'Peru', code: '+51', iso: 'PE', native: 'Perú' },
+            { name: 'Philippines', code: '+63', iso: 'PH', native: 'Philippines' },
+            { name: 'Poland', code: '+48', iso: 'PL', native: 'Polska' },
+            { name: 'Portugal', code: '+351', iso: 'PT', native: 'Portugal' },
+            { name: 'Puerto Rico', code: '+1787', iso: 'PR', native: 'Puerto Rico' },
+            { name: 'Qatar', code: '+974', iso: 'QA', native: 'قطر' },
+            { name: 'Romania', code: '+40', iso: 'RO', native: 'România' },
+            { name: 'Russia', code: '+7', iso: 'RU', native: 'Россия' },
+            { name: 'Saudi Arabia', code: '+966', iso: 'SA', native: 'السعودية' },
+            { name: 'Serbia', code: '+381', iso: 'RS', native: 'Србија' },
+            { name: 'Singapore', code: '+65', iso: 'SG', native: 'Singapore' },
+            { name: 'Slovakia', code: '+421', iso: 'SK', native: 'Slovensko' },
+            { name: 'Slovenia', code: '+386', iso: 'SI', native: 'Slovenija' },
+            { name: 'South Africa', code: '+27', iso: 'ZA', native: 'South Africa' },
+            { name: 'South Korea', code: '+82', iso: 'KR', native: '대한민국' },
+            { name: 'Spain', code: '+34', iso: 'ES', native: 'España' },
+            { name: 'Sri Lanka', code: '+94', iso: 'LK', native: 'ශ්‍රී ලංකා' },
+            { name: 'Sweden', code: '+46', iso: 'SE', native: 'Sverige' },
+            { name: 'Switzerland', code: '+41', iso: 'CH', native: 'Schweiz' },
+            { name: 'Syria', code: '+963', iso: 'SY', native: 'سوريا' },
+            { name: 'Taiwan', code: '+886', iso: 'TW', native: '台灣' },
+            { name: 'Thailand', code: '+66', iso: 'TH', native: 'ไทย' },
+            { name: 'Tunisia', code: '+216', iso: 'TN', native: 'تونس' },
+            { name: 'Turkey', code: '+90', iso: 'TR', native: 'Türkiye' },
+            { name: 'Ukraine', code: '+380', iso: 'UA', native: 'Україна' },
+            { name: 'United Arab Emirates', code: '+971', iso: 'AE', native: 'الإمارات' },
+            { name: 'United Kingdom', code: '+44', iso: 'GB', native: 'United Kingdom' },
+            { name: 'Uruguay', code: '+598', iso: 'UY', native: 'Uruguay' },
+            { name: 'Venezuela', code: '+58', iso: 'VE', native: 'Venezuela' },
+            { name: 'Vietnam', code: '+84', iso: 'VN', native: 'Việt Nam' },
+            { name: 'Yemen', code: '+967', iso: 'YE', native: 'اليمن' }
         ];
 
         let allCountries = countries;
@@ -935,16 +941,24 @@
         function displayCountries(countriesToShow) {
             const container = document.getElementById('countries-list');
             
-            container.innerHTML = countriesToShow.map(country => `
-                <div onclick="selectCountry('${country.code}', '${country.flag}', '${country.name}')" style="padding: 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f3f4f6; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">
-                    <span style="font-size: 1.5em;">${country.flag}</span>
+            container.innerHTML = countriesToShow.map(country => {
+                const safeName = country.name.replace(/'/g, "\\'");
+                const flagUrl = `https://flagcdn.com/w40/${country.iso.toLowerCase()}.png`;
+                
+                return `
+                <div onclick="selectCountry('${country.code}', '${country.iso}', '${safeName}')" style="padding: 12px; cursor: pointer; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f3f4f6; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">
+                    <img src="${flagUrl}" alt="${country.iso}" style="width: 32px; height: 24px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="display: none; width: 32px; height: 24px; background: #f3f4f6; border-radius: 3px; align-items: center; justify-content: center; font-weight: bold; font-size: 0.7em; color: #666;">
+                        ${country.iso}
+                    </div>
                     <div style="flex: 1;">
                         <div style="font-weight: 500; color: #333;">${country.name}</div>
-                        <div style="font-size: 0.85em; color: #666;">${country.native}</div>
+                        <div style="font-size: 0.85em; color: #999;">${country.native}</div>
                     </div>
-                    <span style="color: #666; font-weight: bold;">${country.code}</span>
+                    <span style="color: #10b981; font-weight: bold;">${country.code}</span>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function toggleCountryDropdown() {
@@ -958,9 +972,12 @@
             }
         }
 
-        function selectCountry(code, flag, name) {
+        function selectCountry(code, iso, name) {
             selectedCountryCode = code;
-            document.getElementById('selected-country').textContent = `${flag} ${code}`;
+            const flagImg = document.getElementById('selected-flag-img');
+            flagImg.src = `https://flagcdn.com/w40/${iso.toLowerCase()}.png`;
+            flagImg.alt = iso;
+            document.getElementById('selected-code').textContent = code;
             document.getElementById('country-dropdown').style.display = 'none';
         }
 
