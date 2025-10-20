@@ -636,6 +636,22 @@
                                     </div>
                                 </div>
                                 
+                                <!-- Programe su campaña -->
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="enable-schedule" onchange="toggleScheduleOptions()" style="width: 18px; height: 18px; cursor: pointer;">
+                                        <span style="font-weight: 600; color: #333;">Programe su campaña</span>
+                                    </label>
+                                    
+                                    <div id="schedule-options" style="margin-top: 10px; display: none; padding: 15px; background: #f9fafb; border-radius: 8px;">
+                                        <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 10px; font-weight: 500;">Fecha y hora de inicio</label>
+                                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                            <input type="date" id="schedule-date" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
+                                            <input type="time" id="schedule-time" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <!-- Pausa cada X mensajes -->
                                 <div style="margin-bottom: 20px;">
                                     <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 5px;">Pausa cada X mensajes</label>
@@ -1656,6 +1672,35 @@
             const checkbox = document.getElementById('enable-batches');
             const options = document.getElementById('batch-options');
             options.style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function toggleScheduleOptions() {
+            const checkbox = document.getElementById('enable-schedule');
+            const options = document.getElementById('schedule-options');
+            
+            if (checkbox.checked) {
+                options.style.display = 'block';
+                
+                // Obtener fecha y hora actual
+                const now = new Date();
+                
+                // Formatear fecha (YYYY-MM-DD)
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const dateString = `${year}-${month}-${day}`;
+                
+                // Formatear hora (HH:MM)
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const timeString = `${hours}:${minutes}`;
+                
+                // Establecer valores en los inputs
+                document.getElementById('schedule-date').value = dateString;
+                document.getElementById('schedule-time').value = timeString;
+            } else {
+                options.style.display = 'none';
+            }
         }
 
         // Funciones para el slider de delay
