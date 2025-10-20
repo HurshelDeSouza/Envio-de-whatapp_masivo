@@ -454,6 +454,18 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Botón Enviar Mensajes -->
+                    <button class="btn-primary" onclick="sendCampaign()" style="width: 100%; margin-top: 20px;">
+                        📤 Enviar Mensajes
+                    </button>
+                    
+                    <div class="campaign-controls" id="campaign-controls" style="display: none; margin-top: 10px;">
+                        <button class="btn-primary btn-pause" onclick="pauseCampaign()" style="width: 100%; margin-bottom: 10px;">⏸️ Pausar</button>
+                        <button class="btn-primary btn-stop" onclick="stopCampaign()" style="width: 100%;">🛑 Detener</button>
+                    </div>
+                    
+                    <div id="status-message" class="status-message"></div>
                     </div>
                     
                     <!-- COLUMNA DERECHA - Opciones Avanzadas -->
@@ -507,18 +519,6 @@
                                     <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 5px;">Duración de pausa (minutos)</label>
                                     <input type="number" id="pause-duration" value="10" min="5" max="60" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
                                 </div>
-                                
-                                <!-- Botón Enviar Mensajes -->
-                                <button class="btn-primary" onclick="sendCampaign()" style="width: 100%; margin-top: 10px;">
-                                    📤 Enviar Mensajes
-                                </button>
-                                
-                                <div class="campaign-controls" id="campaign-controls" style="display: none; margin-top: 10px;">
-                                    <button class="btn-primary btn-pause" onclick="pauseCampaign()" style="width: 100%; margin-bottom: 10px;">⏸️ Pausar</button>
-                                    <button class="btn-primary btn-stop" onclick="stopCampaign()" style="width: 100%;">🛑 Detener</button>
-                                </div>
-                                
-                                <div id="status-message" class="status-message"></div>
                             </div>
                         </div>
                     </div>
