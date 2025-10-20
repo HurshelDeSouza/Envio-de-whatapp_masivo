@@ -619,12 +619,20 @@
                                         <span style="font-weight: 600; color: #333;">Agregar lotes <span style="color: #10b981;">(Recomendado)</span></span>
                                     </label>
                                     
-                                    <div id="batch-options" style="margin-top: 10px; display: none;">
-                                        <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 5px;">Tamaño de lote</label>
-                                        <input type="number" id="batch-size" value="50" min="10" max="200" step="1" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em; margin-bottom: 10px;">
+                                    <div id="batch-options" style="margin-top: 10px; display: none; padding: 15px; background: #f9fafb; border-radius: 8px;">
+                                        <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 10px; font-weight: 500;">Enviar en lotes de</label>
+                                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                                            <input type="range" id="batch-size-slider" min="10" max="50" value="50" step="1" oninput="updateBatchSizeValue()" style="flex: 1; background: linear-gradient(to right, #10b981 0%, #10b981 100%, #e5e7eb 100%, #e5e7eb 100%);">
+                                            <input type="number" id="batch-size" value="50" min="10" max="50" step="1" oninput="updateBatchSizeFromInput()" style="width: 80px; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em; text-align: center;">
+                                            <span style="color: #666; font-weight: 500;">mensajes</span>
+                                        </div>
                                         
-                                        <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 5px;">Pausa entre lotes (minutos)</label>
-                                        <input type="number" id="batch-delay" value="30" min="5" max="120" step="1" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
+                                        <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 10px; font-weight: 500;">Agregue un intervalo de tiempo en lotes en blanco y negro de</label>
+                                        <div style="display: flex; align-items: center; gap: 15px;">
+                                            <input type="range" id="batch-delay-slider" min="5" max="50" value="30" step="1" oninput="updateBatchDelayValue()" style="flex: 1; background: linear-gradient(to right, #10b981 0%, #10b981 56%, #e5e7eb 56%, #e5e7eb 100%);">
+                                            <input type="number" id="batch-delay" value="30" min="5" max="50" step="1" oninput="updateBatchDelayFromInput()" style="width: 80px; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em; text-align: center;">
+                                            <span style="color: #666; font-weight: 500;">segundos</span>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -1706,6 +1714,62 @@
                 customOption.style.display = 'none';
                 sliderOption.style.display = 'none';
             }
+        }
+
+        // Funciones para el slider de tamaño de lote
+        function updateBatchSizeValue() {
+            const slider = document.getElementById('batch-size-slider');
+            const input = document.getElementById('batch-size');
+            input.value = parseInt(slider.value);
+            
+            // Actualizar el gradiente del slider
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        function updateBatchSizeFromInput() {
+            const slider = document.getElementById('batch-size-slider');
+            const input = document.getElementById('batch-size');
+            
+            // Validar y limitar el valor
+            let value = parseInt(input.value) || 10;
+            if (value < 10) value = 10;
+            if (value > 50) value = 50;
+            
+            input.value = value;
+            slider.value = value;
+            
+            // Actualizar el gradiente del slider
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        // Funciones para el slider de pausa entre lotes
+        function updateBatchDelayValue() {
+            const slider = document.getElementById('batch-delay-slider');
+            const input = document.getElementById('batch-delay');
+            input.value = parseInt(slider.value);
+            
+            // Actualizar el gradiente del slider
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        function updateBatchDelayFromInput() {
+            const slider = document.getElementById('batch-delay-slider');
+            const input = document.getElementById('batch-delay');
+            
+            // Validar y limitar el valor
+            let value = parseInt(input.value) || 5;
+            if (value < 5) value = 5;
+            if (value > 50) value = 50;
+            
+            input.value = value;
+            slider.value = value;
+            
+            // Actualizar el gradiente del slider
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
         }
     </script>
 </body>
