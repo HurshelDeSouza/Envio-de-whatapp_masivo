@@ -736,29 +736,282 @@
 
                 <!-- Sección para Groups -->
                 <div id="section-groups">
-                    <div class="form-group">
-                        <label>Filtrar por País</label>
-                        <select id="country-select" onchange="loadGroups()">
-                            <option value="USA">🇺🇸 USA</option>
-                            <option value="COLOMBIA">🇨🇴 Colombia</option>
-                            <option value="VENEZUELA">🇻🇪 Venezuela</option>
-                            <option value="ARGENTINA">🇦🇷 Argentina</option>
-                            <option value="MEXICO">🇲🇽 México</option>
-                        </select>
+                    <!-- Layout de dos columnas -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        
+                        <!-- COLUMNA IZQUIERDA -->
+                        <div>
+                            <div class="form-group">
+                                <label>Seleccione grupos para enviar mensajes</label>
+                                
+                                <!-- Contenedor tipo textarea con todo integrado -->
+                                <div style="border: 2px solid #d1d5db; border-radius: 10px; background: white; overflow: hidden;">
+                            
+                            <!-- Header con filtro de país -->
+                            <div style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb; background: #fafafa;">
+                                <div style="position: relative; display: inline-block; width: 100%;">
+                                    <label style="display: block; margin-bottom: 8px; color: #666; font-size: 0.9em; font-weight: 500;">Filtrar por País</label>
+                                    <select id="country-select" onchange="loadGroups()" style="width: 100%; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; font-size: 0.95em;">
+                                        <option value="USA">🇺🇸 USA</option>
+                                        <option value="COLOMBIA">🇨🇴 Colombia</option>
+                                        <option value="VENEZUELA">🇻🇪 Venezuela</option>
+                                        <option value="ARGENTINA">🇦🇷 Argentina</option>
+                                        <option value="MEXICO">🇲🇽 México</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Área de contenido con búsqueda y lista de grupos -->
+                            <div style="padding: 15px;">
+                                <div style="margin-bottom: 10px;">
+                                    <input type="text" id="search-groups" placeholder="🔍 Buscar grupos por nombre..." style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95em;" oninput="filterGroups()">
+                                </div>
+                                
+                                <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; cursor: pointer; font-weight: 500;">
+                                    <input type="checkbox" id="select-all" onchange="toggleSelectAll()" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;">
+                                    Seleccionar Todos (<span id="group-count">0</span> grupos)
+                                </label>
+                                
+                                <div id="groups-list" style="max-height: 200px; overflow-y: auto; border: 2px solid #e5e7eb; border-radius: 8px; padding: 10px; background: #fafafa;">
+                                    <p style="color: #666;">Cargando grupos...</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Footer con botones -->
+                            <div style="padding: 12px 15px; border-top: 1px solid #e5e7eb; background: #fafafa; display: flex; gap: 10px; align-items: center; justify-content: flex-end;">
+                                <div style="position: relative;">
+                                    <button onclick="toggleCampaignGroupsMenu()" id="campaign-groups-btn" style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; font-size: 0.9em; min-width: 180px; color: #666; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                        <span>Campaign Groups</span>
+                                        <span style="font-size: 0.8em;">▼</span>
+                                    </button>
+                                    
+                                    <!-- Menú desplegable de Campaign Groups -->
+                                    <div id="campaign-groups-dropdown" style="display: none; position: absolute; bottom: 100%; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 250px; margin-bottom: 5px; z-index: 1000;">
+                                        <div style="padding: 15px; color: #9ca3af; text-align: center; border-bottom: 1px solid #e5e7eb; font-size: 1.1em;">
+                                            ¡Nada que mostrar!
+                                        </div>
+                                        <div onclick="showAddCampaignGroupModal()" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">
+                                            📋 <span style="color: #10b981;">Add Template</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="select-all" onchange="toggleSelectAll()">
-                            Seleccionar Todos (<span id="group-count">0</span> grupos)
-                        </label>
-                        <div style="margin-bottom: 10px;">
-                            <input type="text" id="search-groups" placeholder="🔍 Buscar grupos por nombre..." style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;" oninput="filterGroups()">
-                        </div>
-                        <div id="groups-list" style="max-height: 200px; overflow-y: auto; border: 2px solid #e5e7eb; border-radius: 8px; padding: 10px;">
-                            <p style="color: #666;">Cargando grupos...</p>
+                    <!-- Área de mensaje con opciones de formato -->
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>Introducir mensaje</label>
+                        <div style="border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                            <!-- Barra de formato -->
+                            <div style="background: #f9fafb; padding: 8px; border-bottom: 1px solid #e5e7eb; display: flex; gap: 10px; align-items: center;">
+                                <button onclick="formatTextGroups('bold')" style="padding: 5px 10px; border: 1px solid #e5e7eb; background: white; border-radius: 4px; cursor: pointer; font-weight: bold;">*text*</button>
+                                <button onclick="formatTextGroups('italic')" style="padding: 5px 10px; border: 1px solid #e5e7eb; background: white; border-radius: 4px; cursor: pointer; font-style: italic;">_text_</button>
+                                <button onclick="formatTextGroups('strike')" style="padding: 5px 10px; border: 1px solid #e5e7eb; background: white; border-radius: 4px; cursor: pointer; text-decoration: line-through;">~text~</button>
+                                <button onclick="formatTextGroups('code')" style="padding: 5px 10px; border: 1px solid #e5e7eb; background: white; border-radius: 4px; cursor: pointer; font-family: monospace;">`text`</button>
+                                <span style="color: #999; margin-left: auto;">EMOJIS</span>
+                            </div>
+                            
+                            <!-- Área de texto -->
+                            <textarea id="message-groups" placeholder="Escribe tu mensaje aquí..." style="width: 100%; min-height: 150px; border: none; padding: 15px; font-size: 1em; resize: vertical; font-family: inherit;"></textarea>
+                            
+                            <!-- Barra inferior con clip y template -->
+                            <div style="background: #f9fafb; padding: 10px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; align-items: center;">
+                                <button onclick="attachFileGroups()" style="padding: 8px 15px; border: 1px solid #e5e7eb; background: white; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                    📎
+                                </button>
+                                
+                                <div style="position: relative;">
+                                    <button onclick="toggleTemplateMenuGroups()" id="template-groups-btn" style="padding: 8px 15px; border: 1px solid #e5e7eb; background: white; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                        Template ▼
+                                    </button>
+                                    
+                                    <!-- Menú desplegable de templates -->
+                                    <div id="template-groups-dropdown" style="display: none; position: absolute; bottom: 100%; left: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 200px; margin-bottom: 5px; z-index: 1000;">
+                                        <div style="padding: 10px; color: #666; text-align: center; border-bottom: 1px solid #e5e7eb;">
+                                            ¡Nada que mostrar!
+                                        </div>
+                                        <div onclick="showAddTemplateModalGroups()" style="padding: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">
+                                            📋 Add Template
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Botón Enviar Mensajes -->
+                    <button class="btn-primary" onclick="sendCampaignGroups()" style="width: 100%; margin-top: 20px;">
+                        📤 Enviar Mensajes
+                    </button>
+                    
+                    <div class="campaign-controls" id="campaign-controls-groups" style="display: none; margin-top: 10px;">
+                        <button class="btn-primary btn-pause" onclick="pauseCampaignGroups()" style="width: 100%; margin-bottom: 10px;">⏸️ Pausar</button>
+                        <button class="btn-primary btn-stop" onclick="stopCampaignGroups()" style="width: 100%;">🛑 Detener</button>
+                    </div>
+                    
+                    <div id="status-message-groups" class="status-message"></div>
+                    </div>
+                    
+                    <!-- COLUMNA DERECHA - Opciones Avanzadas -->
+                    <div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
+                                <span style="font-size: 1.2em;">⚙️</span>
+                                <span style="font-weight: bold; font-size: 1.1em;">Opciones Avanzadas</span>
+                            </label>
+                            
+                            <div style="border: 2px solid #e5e7eb; border-radius: 10px; padding: 20px; background: white;">
+                                
+                                <!-- Agregar intervalos de tiempo -->
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px; cursor: pointer;">
+                                        <input type="checkbox" id="enable-delays-groups" onchange="toggleDelayOptionsGroups()" style="width: 20px; height: 20px; cursor: pointer; accent-color: #10b981;">
+                                        <span style="font-weight: 600; color: #333; font-size: 1.05em;">Agregar un intervalo de tiempo entre mensajes</span>
+                                    </label>
+                                    
+                                    <div id="delay-options-groups" style="margin-top: 15px; display: none; padding: 15px; background: #f9fafb; border-radius: 8px;">
+                                        <!-- Opción con Slider -->
+                                        <div style="margin-bottom: 20px;">
+                                            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; cursor: pointer;">
+                                                <input type="radio" name="delay-mode-groups" value="slider" checked onchange="toggleDelayModeGroups()" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;">
+                                                <span style="font-weight: 500; color: #333;">Fijo</span>
+                                            </label>
+                                            
+                                            <div id="slider-option-groups" style="display: flex; align-items: center; gap: 15px; padding-left: 28px; padding-top: 10px; padding-bottom: 10px;">
+                                                <input type="range" id="delay-slider-groups" min="1" max="60" value="3" step="1" oninput="updateSliderValueGroups()" style="flex: 1; background: linear-gradient(to right, #10b981 0%, #10b981 5%, #e5e7eb 5%, #e5e7eb 100%);">
+                                                <input type="number" id="delay-slider-value-groups" value="3" min="1" max="60" step="1" oninput="updateSliderFromInputGroups()" style="width: 80px; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em; text-align: center;">
+                                                <span style="color: #666; font-weight: 500;">sec</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Opción Aleatorio -->
+                                        <div style="margin-bottom: 20px;">
+                                            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer;">
+                                                <input type="radio" name="delay-mode-groups" value="random" onchange="toggleDelayModeGroups()" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;">
+                                                <span style="font-weight: 500; color: #333;">Aleatorio</span>
+                                            </label>
+                                        </div>
+                                        
+                                        <!-- Opción Personalizado aleatorio (Recomendado) -->
+                                        <div>
+                                            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; cursor: pointer;">
+                                                <input type="radio" name="delay-mode-groups" value="custom" onchange="toggleDelayModeGroups()" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;">
+                                                <span style="font-weight: 500; color: #333;">Personalizado aleatorio <span style="color: #ef4444; font-weight: 600;">(Recomendado)</span></span>
+                                                <span style="margin-left: auto; color: #9ca3af; cursor: help;" title="Esta opción varía el tiempo entre mensajes de forma aleatoria para parecer más natural">❓</span>
+                                            </label>
+                                            
+                                            <div id="custom-option-groups" style="display: none; padding-left: 28px;">
+                                                <div style="display: flex; gap: 10px; align-items: center;">
+                                                    <span style="color: #666; font-weight: 500;">De:</span>
+                                                    <input type="number" id="delay-min-groups" value="5" min="1" max="60" step="1" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
+                                                    <span style="color: #666; font-weight: 500;">A:</span>
+                                                    <input type="number" id="delay-max-groups" value="15" min="1" max="60" step="1" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
+                                                    <span style="color: #666; font-weight: 500;">segundos</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Agregar lotes -->
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="enable-batches-groups" onchange="toggleBatchOptionsGroups()" style="width: 18px; height: 18px; cursor: pointer;">
+                                        <span style="font-weight: 600; color: #333;">Agregar lotes <span style="color: #10b981;">(Recomendado)</span></span>
+                                    </label>
+                                    
+                                    <div id="batch-options-groups" style="margin-top: 10px; display: none; padding: 15px; background: #f9fafb; border-radius: 8px;">
+                                        <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 10px; font-weight: 500;">Enviar en lotes de</label>
+                                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                                            <input type="range" id="batch-size-slider-groups" min="10" max="50" value="50" step="1" oninput="updateBatchSizeValueGroups()" style="flex: 1; background: linear-gradient(to right, #10b981 0%, #10b981 100%, #e5e7eb 100%, #e5e7eb 100%);">
+                                            <input type="number" id="batch-size-groups" value="50" min="10" max="50" step="1" oninput="updateBatchSizeFromInputGroups()" style="width: 80px; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em; text-align: center;">
+                                            <span style="color: #666; font-weight: 500;">mensajes</span>
+                                        </div>
+                                        
+                                        <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 10px; font-weight: 500;">Agregue un intervalo de tiempo en lotes en blanco y negro de</label>
+                                        <div style="display: flex; align-items: center; gap: 15px;">
+                                            <input type="range" id="batch-delay-slider-groups" min="5" max="50" value="30" step="1" oninput="updateBatchDelayValueGroups()" style="flex: 1; background: linear-gradient(to right, #10b981 0%, #10b981 56%, #e5e7eb 56%, #e5e7eb 100%);">
+                                            <input type="number" id="batch-delay-groups" value="30" min="5" max="50" step="1" oninput="updateBatchDelayFromInputGroups()" style="width: 80px; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em; text-align: center;">
+                                            <span style="color: #666; font-weight: 500;">segundos</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Programe su campaña -->
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="enable-schedule-groups" onchange="toggleScheduleOptionsGroups()" style="width: 18px; height: 18px; cursor: pointer;">
+                                        <span style="font-weight: 600; color: #333;">Programe su campaña</span>
+                                    </label>
+                                    
+                                    <div id="schedule-options-groups" style="margin-top: 10px; display: none; padding: 15px; background: #f9fafb; border-radius: 8px;">
+                                        <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 10px; font-weight: 500;">Fecha y hora de inicio</label>
+                                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                            <input type="date" id="schedule-date-groups" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
+                                            <input type="time" id="schedule-time-groups" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Botones de campañas -->
+                                    <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+                                        <div style="position: relative;">
+                                            <button onclick="toggleUpcomingCampaignsGroups()" id="upcoming-campaigns-groups-btn" style="width: 100%; padding: 12px 20px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 8px; font-weight: 600; font-size: 1em; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='white'">
+                                                <span>Ver campañas programadas</span>
+                                                <span style="font-size: 0.8em;">▼</span>
+                                            </button>
+                                            
+                                            <!-- Dropdown de campañas programadas -->
+                                            <div id="upcoming-campaigns-groups-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 5px; z-index: 1000; max-height: 300px; overflow-y: auto;">
+                                                <div style="padding: 20px; color: #9ca3af; text-align: center; font-size: 0.95em;">
+                                                    No hay campañas programadas
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div style="position: relative;">
+                                            <button onclick="togglePausedCampaignsGroups()" id="paused-campaigns-groups-btn" style="width: 100%; padding: 12px 20px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 8px; font-weight: 600; font-size: 1em; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='white'">
+                                                <span>Reanudar campañas pausadas</span>
+                                                <span style="font-size: 0.8em;">▼</span>
+                                            </button>
+                                            
+                                            <!-- Dropdown de campañas pausadas -->
+                                            <div id="paused-campaigns-groups-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 5px; z-index: 1000; max-height: 300px; overflow-y: auto;">
+                                                <div style="padding: 20px; color: #9ca3af; text-align: center; font-size: 0.95em;">
+                                                    Sin campañas pausadas
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <!-- Modal: Add Campaign Groups -->
+                <div id="add-campaign-groups-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+                    <div style="background: #d1e7dd; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%; position: relative;">
+                        <button onclick="closeAddCampaignGroupModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 2em; cursor: pointer; color: #333;">×</button>
+                        
+                        <h2 style="margin-bottom: 20px; color: #333;">Save Campaign Groups</h2>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <textarea id="campaign-groups-content" placeholder="Grupos seleccionados..." style="width: 100%; min-height: 200px; padding: 15px; border: 2px solid #b8dac6; border-radius: 8px; font-size: 1em; resize: vertical; font-family: inherit; background: white;"></textarea>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                            <label style="color: #333; font-weight: bold;">Nombre de la campaña</label>
+                            <input type="text" id="campaign-groups-name" placeholder="Nombre de la campaña" style="flex: 1; padding: 12px; border: 2px solid #b8dac6; border-radius: 8px; font-size: 1em; background: white;">
+                        </div>
+                        
+                        <button onclick="saveCampaignGroups()" style="background: #26a69a; color: white; border: none; padding: 15px 40px; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; width: 100%;">
+                            Save Campaign Groups
+                        </button>
+                    </div>
+                </div>
                 </div>
 
                 <!-- Sección para Contacts -->
@@ -1700,6 +1953,22 @@
             if (dropdown && btn && !dropdown.contains(event.target) && !btn.contains(event.target)) {
                 dropdown.style.display = 'none';
             }
+
+            // Cerrar el menú de Campaign Groups
+            const dropdownGroups = document.getElementById('campaign-groups-dropdown');
+            const btnGroups = document.getElementById('campaign-groups-btn');
+            
+            if (dropdownGroups && btnGroups && !dropdownGroups.contains(event.target) && !btnGroups.contains(event.target)) {
+                dropdownGroups.style.display = 'none';
+            }
+
+            // Cerrar el menú de Template Groups
+            const dropdownTemplateGroups = document.getElementById('template-groups-dropdown');
+            const btnTemplateGroups = document.getElementById('template-groups-btn');
+            
+            if (dropdownTemplateGroups && btnTemplateGroups && !dropdownTemplateGroups.contains(event.target) && !btnTemplateGroups.contains(event.target)) {
+                dropdownTemplateGroups.style.display = 'none';
+            }
         });
 
         // Funciones para mostrar/ocultar opciones avanzadas
@@ -1881,6 +2150,341 @@
             slider.value = value;
             
             // Actualizar el gradiente del slider
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        // ============================================
+        // FUNCIONES PARA GROUPS
+        // ============================================
+
+        function formatTextGroups(type) {
+            const textarea = document.getElementById('message-groups');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            
+            if (!selectedText) {
+                alert('Por favor selecciona el texto que deseas formatear');
+                return;
+            }
+            
+            let formattedText = '';
+            switch(type) {
+                case 'bold':
+                    formattedText = `*${selectedText}*`;
+                    break;
+                case 'italic':
+                    formattedText = `_${selectedText}_`;
+                    break;
+                case 'strike':
+                    formattedText = `~${selectedText}~`;
+                    break;
+                case 'code':
+                    formattedText = `\`${selectedText}\``;
+                    break;
+            }
+            
+            textarea.value = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start, start + formattedText.length);
+        }
+
+        function attachFileGroups() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*,video/*,application/pdf,.doc,.docx';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    alert(`Archivo seleccionado: ${file.name}\n(Funcionalidad de envío en desarrollo)`);
+                }
+            };
+            input.click();
+        }
+
+        function toggleTemplateMenuGroups() {
+            const dropdown = document.getElementById('template-groups-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showAddTemplateModalGroups() {
+            document.getElementById('add-template-modal').style.display = 'flex';
+            document.getElementById('template-groups-dropdown').style.display = 'none';
+        }
+
+        function toggleCampaignGroupsMenu() {
+            const dropdown = document.getElementById('campaign-groups-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showAddCampaignGroupModal() {
+            const selectedGroupsText = selectedGroups.map(id => {
+                const group = allGroups.find(g => g.group_id === id);
+                return group ? group.name : id;
+            }).join('\n');
+            
+            document.getElementById('campaign-groups-content').value = selectedGroupsText;
+            document.getElementById('campaign-groups-dropdown').style.display = 'none';
+            document.getElementById('add-campaign-groups-modal').style.display = 'flex';
+        }
+
+        function closeAddCampaignGroupModal() {
+            document.getElementById('add-campaign-groups-modal').style.display = 'none';
+            document.getElementById('campaign-groups-content').value = '';
+            document.getElementById('campaign-groups-name').value = '';
+        }
+
+        function saveCampaignGroups() {
+            const content = document.getElementById('campaign-groups-content').value.trim();
+            const name = document.getElementById('campaign-groups-name').value.trim();
+            
+            if (!content) {
+                alert('Por favor selecciona grupos');
+                return;
+            }
+            
+            if (!name) {
+                alert('Por favor escribe un nombre para la campaña');
+                return;
+            }
+            
+            fetch('/api/campaign-groups', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    name: name, 
+                    groups: selectedGroups,
+                    phone: phone
+                })
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    alert('✅ Campaign Groups guardado exitosamente');
+                    closeAddCampaignGroupModal();
+                    loadCampaignGroups();
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            })
+            .catch(error => {
+                alert('❌ Error al guardar: ' + error.message);
+            });
+        }
+
+        function loadCampaignGroups() {
+            console.log('Cargando campaign groups...');
+        }
+
+        async function sendCampaignGroups() {
+            if (selectedGroups.length === 0) {
+                showStatusGroups('error', 'Por favor selecciona al menos un grupo');
+                return;
+            }
+
+            const message = document.getElementById('message-groups').value.trim();
+            if (!message) {
+                showStatusGroups('error', 'Por favor escribe un mensaje');
+                return;
+            }
+
+            const config = {
+                delays: {
+                    min: parseInt(document.getElementById('delay-min-groups').value),
+                    max: parseInt(document.getElementById('delay-max-groups').value)
+                },
+                batchSize: parseInt(document.getElementById('batch-size-groups').value),
+                batchDelay: parseInt(document.getElementById('batch-delay-groups').value)
+            };
+
+            try {
+                showStatusGroups('info', '🚀 Iniciando campaña...');
+                document.getElementById('campaign-controls-groups').style.display = 'flex';
+
+                const response = await fetch('/api/campaigns/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phone,
+                        groupIds: selectedGroups,
+                        message,
+                        config
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatusGroups('info', '📤 Campaña en progreso...');
+                } else {
+                    showStatusGroups('error', result.message);
+                    document.getElementById('campaign-controls-groups').style.display = 'none';
+                }
+            } catch (error) {
+                showStatusGroups('error', 'Error: ' + error.message);
+                document.getElementById('campaign-controls-groups').style.display = 'none';
+            }
+        }
+
+        function pauseCampaignGroups() {
+            showStatusGroups('info', '⏸️ Pausando campaña...');
+        }
+
+        function stopCampaignGroups() {
+            if (confirm('¿Estás seguro de que quieres detener la campaña?')) {
+                showStatusGroups('info', '🛑 Deteniendo campaña...');
+                document.getElementById('campaign-controls-groups').style.display = 'none';
+            }
+        }
+
+        function showStatusGroups(type, message) {
+            const statusDiv = document.getElementById('status-message-groups');
+            statusDiv.className = 'status-message ' + type;
+            statusDiv.textContent = message;
+        }
+
+        function toggleDelayOptionsGroups() {
+            const checkbox = document.getElementById('enable-delays-groups');
+            const options = document.getElementById('delay-options-groups');
+            options.style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function toggleBatchOptionsGroups() {
+            const checkbox = document.getElementById('enable-batches-groups');
+            const options = document.getElementById('batch-options-groups');
+            options.style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function toggleScheduleOptionsGroups() {
+            const checkbox = document.getElementById('enable-schedule-groups');
+            const options = document.getElementById('schedule-options-groups');
+            
+            if (checkbox.checked) {
+                options.style.display = 'block';
+                
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const dateString = `${year}-${month}-${day}`;
+                
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const timeString = `${hours}:${minutes}`;
+                
+                document.getElementById('schedule-date-groups').value = dateString;
+                document.getElementById('schedule-time-groups').value = timeString;
+            } else {
+                options.style.display = 'none';
+            }
+        }
+
+        function toggleUpcomingCampaignsGroups() {
+            const dropdown = document.getElementById('upcoming-campaigns-groups-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function togglePausedCampaignsGroups() {
+            const dropdown = document.getElementById('paused-campaigns-groups-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function updateSliderValueGroups() {
+            const slider = document.getElementById('delay-slider-groups');
+            const input = document.getElementById('delay-slider-value-groups');
+            input.value = parseInt(slider.value);
+            
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        function updateSliderFromInputGroups() {
+            const slider = document.getElementById('delay-slider-groups');
+            const input = document.getElementById('delay-slider-value-groups');
+            
+            let value = parseInt(input.value) || 1;
+            if (value < 1) value = 1;
+            if (value > 60) value = 60;
+            
+            input.value = value;
+            slider.value = value;
+            
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        function toggleDelayModeGroups() {
+            const mode = document.querySelector('input[name="delay-mode-groups"]:checked').value;
+            const customOption = document.getElementById('custom-option-groups');
+            const sliderOption = document.getElementById('slider-option-groups');
+            const delaySlider = document.getElementById('delay-slider-groups');
+            const delaySliderValue = document.getElementById('delay-slider-value-groups');
+            
+            if (mode === 'custom') {
+                customOption.style.display = 'block';
+                sliderOption.style.display = 'flex';
+                delaySlider.disabled = true;
+                delaySliderValue.disabled = true;
+                sliderOption.style.opacity = '0.5';
+                sliderOption.style.pointerEvents = 'none';
+            } else if (mode === 'slider') {
+                customOption.style.display = 'none';
+                sliderOption.style.display = 'flex';
+                delaySlider.disabled = false;
+                delaySliderValue.disabled = false;
+                sliderOption.style.opacity = '1';
+                sliderOption.style.pointerEvents = 'auto';
+            } else {
+                customOption.style.display = 'none';
+                sliderOption.style.display = 'none';
+            }
+        }
+
+        function updateBatchSizeValueGroups() {
+            const slider = document.getElementById('batch-size-slider-groups');
+            const input = document.getElementById('batch-size-groups');
+            input.value = parseInt(slider.value);
+            
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        function updateBatchSizeFromInputGroups() {
+            const slider = document.getElementById('batch-size-slider-groups');
+            const input = document.getElementById('batch-size-groups');
+            
+            let value = parseInt(input.value) || 10;
+            if (value < 10) value = 10;
+            if (value > 50) value = 50;
+            
+            input.value = value;
+            slider.value = value;
+            
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        function updateBatchDelayValueGroups() {
+            const slider = document.getElementById('batch-delay-slider-groups');
+            const input = document.getElementById('batch-delay-groups');
+            input.value = parseInt(slider.value);
+            
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        function updateBatchDelayFromInputGroups() {
+            const slider = document.getElementById('batch-delay-slider-groups');
+            const input = document.getElementById('batch-delay-groups');
+            
+            let value = parseInt(input.value) || 5;
+            if (value < 5) value = 5;
+            if (value > 50) value = 50;
+            
+            input.value = value;
+            slider.value = value;
+            
             const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
             slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
         }
