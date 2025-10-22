@@ -742,62 +742,69 @@
                         <!-- COLUMNA IZQUIERDA -->
                         <div>
                             <div class="form-group">
-                                <label>Seleccione grupos para enviar mensajes</label>
+                                <label style="font-weight: bold; font-size: 1.1em; margin-bottom: 10px; display: block;">Select groups to message</label>
                                 
-                                <!-- Contenedor tipo textarea con todo integrado -->
-                                <div style="border: 2px solid #d1d5db; border-radius: 10px; background: white; overflow: hidden;">
-                            
-                            <!-- Header con filtro de país -->
-                            <div style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb; background: #fafafa;">
-                                <div style="position: relative; display: inline-block; width: 100%;">
-                                    <label style="display: block; margin-bottom: 8px; color: #666; font-size: 0.9em; font-weight: 500;">Filtrar por País</label>
-                                    <select id="country-select" onchange="loadGroups()" style="width: 100%; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; font-size: 0.95em;">
-                                        <option value="USA">🇺🇸 USA</option>
-                                        <option value="COLOMBIA">🇨🇴 Colombia</option>
-                                        <option value="VENEZUELA">🇻🇪 Venezuela</option>
-                                        <option value="ARGENTINA">🇦🇷 Argentina</option>
-                                        <option value="MEXICO">🇲🇽 México</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <!-- Área de contenido con búsqueda y lista de grupos -->
-                            <div style="padding: 15px;">
-                                <div style="margin-bottom: 10px;">
-                                    <input type="text" id="search-groups" placeholder="🔍 Buscar grupos por nombre..." style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95em;" oninput="filterGroups()">
-                                </div>
-                                
-                                <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; cursor: pointer; font-weight: 500;">
-                                    <input type="checkbox" id="select-all" onchange="toggleSelectAll()" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;">
-                                    Seleccionar Todos (<span id="group-count">0</span> grupos)
-                                </label>
-                                
-                                <div id="groups-list" style="max-height: 200px; overflow-y: auto; border: 2px solid #e5e7eb; border-radius: 8px; padding: 10px; background: #fafafa;">
-                                    <p style="color: #666;">Cargando grupos...</p>
-                                </div>
-                            </div>
-                            
-                            <!-- Footer con botones -->
-                            <div style="padding: 12px 15px; border-top: 1px solid #e5e7eb; background: #fafafa; display: flex; gap: 10px; align-items: center; justify-content: flex-end;">
+                                <!-- Campo clickeable para desplegar grupos -->
                                 <div style="position: relative;">
-                                    <button onclick="toggleCampaignGroupsMenu()" id="campaign-groups-btn" style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; font-size: 0.9em; min-width: 180px; color: #666; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                                        <span>Campaign Groups</span>
-                                        <span style="font-size: 0.8em;">▼</span>
-                                    </button>
-                                    
-                                    <!-- Menú desplegable de Campaign Groups -->
-                                    <div id="campaign-groups-dropdown" style="display: none; position: absolute; bottom: 100%; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 250px; margin-bottom: 5px; z-index: 1000;">
-                                        <div style="padding: 15px; color: #9ca3af; text-align: center; border-bottom: 1px solid #e5e7eb; font-size: 1.1em;">
-                                            ¡Nada que mostrar!
+                                    <div onclick="toggleGroupsDropdown()" id="groups-selector-btn" style="width: 100%; padding: 15px; border: 2px solid #d1d5db; border-radius: 10px; background: white; cursor: pointer; min-height: 120px; position: relative;">
+                                        <span id="groups-placeholder" style="color: #9ca3af; font-size: 1em;">Select groups from the dropdown . . .</span>
+                                        
+                                        <!-- Contenedor de grupos seleccionados como tags -->
+                                        <div id="groups-selected-tags" style="display: none; flex-wrap: wrap; gap: 10px;">
+                                            <!-- Los tags se agregarán aquí dinámicamente -->
                                         </div>
-                                        <div onclick="showAddCampaignGroupModal()" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">
-                                            📋 <span style="color: #10b981;">Add Template</span>
+                                        
+                                        <!-- Botón de basurero para eliminar todos -->
+                                        <button id="clear-all-groups-btn" onclick="clearAllGroups(event)" style="display: none; position: absolute; top: 15px; right: 15px; background: #f3f4f6; border: 2px solid #e5e7eb; border-radius: 6px; padding: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#fee2e2'; this.style.borderColor='#fca5a5'" onmouseout="this.style.background='#f3f4f6'; this.style.borderColor='#e5e7eb'">
+                                            🗑️
+                                        </button>
+                                        
+                                        <!-- Botón de guardar (diskette) -->
+                                        <button id="save-groups-btn" onclick="showAddCampaignGroupModal(event)" style="display: none; position: absolute; bottom: 15px; right: 15px; background: #10b981; border: none; border-radius: 6px; padding: 10px 12px; cursor: pointer; transition: all 0.2s; color: white; font-size: 1.2em;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'" title="Guardar selección">
+                                            💾
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Dropdown de grupos -->
+                                    <div id="groups-dropdown-menu" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 5px; z-index: 1000; max-height: 400px; overflow: hidden;">
+                                        <!-- Barra de búsqueda -->
+                                        <div style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
+                                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                                <input type="text" id="search-groups" placeholder="🔍 Buscar grupo por nombre" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95em;" oninput="filterGroups()" onclick="event.stopPropagation()">
+                                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; white-space: nowrap; font-weight: 500;">
+                                                    <input type="checkbox" id="select-all" onchange="toggleSelectAll()" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;">
+                                                    Select All
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Lista de grupos -->
+                                        <div id="groups-list" style="max-height: 300px; overflow-y: auto; padding: 10px;">
+                                            <p style="color: #666; text-align: center; padding: 20px;">Cargando grupos...</p>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                                
+                                <!-- Botón Campaign Groups -->
+                                <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
+                                    <div style="position: relative;">
+                                        <button onclick="toggleCampaignGroupsMenu()" id="campaign-groups-btn" style="padding: 10px 20px; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; font-size: 0.95em; min-width: 200px; color: #666; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                            <span>Campaign Groups</span>
+                                            <span style="font-size: 0.8em;">▼</span>
+                                        </button>
+                                        
+                                        <!-- Menú desplegable de Campaign Groups -->
+                                        <div id="campaign-groups-dropdown" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 250px; margin-top: 5px; z-index: 1000;">
+                                            <div style="padding: 15px; color: #9ca3af; text-align: center; border-bottom: 1px solid #e5e7eb; font-size: 1.1em;">
+                                                ¡Nada que mostrar!
+                                            </div>
+                                            <div onclick="showAddCampaignGroupModal()" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">
+                                                📋 <span style="color: #10b981;">Add Template</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                         </div>
-                    </div>
 
                     <!-- Área de mensaje con opciones de formato -->
                     <div class="form-group" style="margin-top: 20px;">
@@ -1173,10 +1180,16 @@
 
         function filterGroups() {
             const searchTerm = document.getElementById('search-groups').value.toLowerCase();
-            const filteredGroups = allGroups.filter(group => 
-                (group.name || '').toLowerCase().includes(searchTerm)
-            );
-            displayGroups(filteredGroups);
+            const labels = document.querySelectorAll('#groups-list label');
+            
+            labels.forEach(label => {
+                const text = label.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    label.style.display = 'flex';
+                } else {
+                    label.style.display = 'none';
+                }
+            });
         }
 
         function showExampleNumbers() {
@@ -1575,36 +1588,36 @@
         }
 
         async function loadGroups() {
-            const country = document.getElementById('country-select').value;
-            
             try {
-                const response = await fetch(`/api/groups/successful?country=${country}`);
+                const response = await fetch(`/api/groups/successful`);
                 const groups = await response.json();
                 
                 allGroups = groups;
                 displayGroups(groups);
             } catch (error) {
                 console.error('Error cargando grupos:', error);
+                const container = document.getElementById('groups-list');
+                container.innerHTML = '<p style="color: #ef4444; text-align: center; padding: 20px;">Error al cargar grupos</p>';
             }
         }
 
         function displayGroups(groups) {
             const container = document.getElementById('groups-list');
-            document.getElementById('group-count').textContent = groups.length;
             
             if (groups.length === 0) {
-                container.innerHTML = '<p style="color: #666;">No hay grupos disponibles</p>';
+                container.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">No hay grupos disponibles</p>';
                 return;
             }
 
-            container.innerHTML = groups.map(group => `
-                <div style="padding: 8px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between;">
-                    <label style="flex: 1; cursor: pointer; text-align: left;" onclick="event.target.nextElementSibling.click()">
-                        ${group.name || 'Grupo sin nombre'}
-                    </label>
-                    <input type="checkbox" class="group-checkbox" value="${group.group_id}" onchange="updateSelectedGroups()" style="margin: 0;">
-                </div>
-            `).join('');
+            container.innerHTML = groups.map(group => {
+                const isChecked = selectedGroups.includes(group.group_id) ? 'checked' : '';
+                return `
+                <label style="display: flex; align-items: center; gap: 10px; padding: 12px; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                    <input type="checkbox" class="group-checkbox" value="${group.group_id}" onchange="updateSelectedGroups()" ${isChecked} style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;">
+                    <span style="flex: 1; color: #333; font-size: 0.95em;">${group.name || 'Grupo sin nombre'}</span>
+                </label>
+            `;
+            }).join('');
         }
 
         function toggleSelectAll() {
@@ -1612,7 +1625,10 @@
             const checkboxes = document.querySelectorAll('.group-checkbox');
             
             checkboxes.forEach(cb => {
-                cb.checked = selectAll;
+                // Solo marcar/desmarcar los checkboxes visibles (no filtrados)
+                if (cb.closest('label').style.display !== 'none') {
+                    cb.checked = selectAll;
+                }
             });
             
             updateSelectedGroups();
@@ -1622,6 +1638,106 @@
             const checkboxes = document.querySelectorAll('.group-checkbox:checked');
             selectedGroups = Array.from(checkboxes).map(cb => cb.value);
             console.log('Grupos seleccionados:', selectedGroups.length);
+            
+            // Actualizar el display del selector
+            updateGroupsDisplay();
+        }
+
+        function toggleGroupsDropdown() {
+            const dropdown = document.getElementById('groups-dropdown-menu');
+            const isVisible = dropdown.style.display === 'block';
+            dropdown.style.display = isVisible ? 'none' : 'block';
+            
+            if (!isVisible) {
+                document.getElementById('search-groups').value = '';
+                filterGroups();
+            }
+        }
+
+        function updateGroupsDisplay() {
+            const placeholder = document.getElementById('groups-placeholder');
+            const tagsContainer = document.getElementById('groups-selected-tags');
+            const clearAllBtn = document.getElementById('clear-all-groups-btn');
+            const saveBtn = document.getElementById('save-groups-btn');
+            
+            if (selectedGroups.length === 0) {
+                placeholder.style.display = 'block';
+                tagsContainer.style.display = 'none';
+                clearAllBtn.style.display = 'none';
+                saveBtn.style.display = 'none';
+            } else {
+                placeholder.style.display = 'none';
+                tagsContainer.style.display = 'flex';
+                clearAllBtn.style.display = 'block';
+                saveBtn.style.display = 'block';
+                
+                // Crear los tags para cada grupo seleccionado
+                tagsContainer.innerHTML = selectedGroups.map(id => {
+                    const group = allGroups.find(g => g.group_id === id);
+                    const groupName = group ? group.name : id;
+                    
+                    return `
+                        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; background: #d1fae5; border: 2px solid #10b981; border-radius: 8px; font-size: 0.95em; color: #065f46;">
+                            <span>${groupName}</span>
+                            <button onclick="removeGroup(event, '${id}')" style="background: none; border: none; cursor: pointer; font-size: 1.1em; color: #065f46; padding: 0; display: flex; align-items: center; font-weight: bold;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#065f46'">
+                                ×
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function removeGroup(event, groupId) {
+            event.stopPropagation();
+            
+            // Remover el grupo de la lista de seleccionados
+            selectedGroups = selectedGroups.filter(id => id !== groupId);
+            
+            // Desmarcar el checkbox correspondiente
+            const checkbox = document.querySelector(`.group-checkbox[value="${groupId}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+            }
+            
+            // Actualizar el display
+            updateGroupsDisplay();
+            
+            // Actualizar el checkbox "Select All" si es necesario
+            updateSelectAllCheckbox();
+        }
+
+        function clearAllGroups(event) {
+            event.stopPropagation();
+            
+            if (confirm('¿Deseas eliminar todos los grupos seleccionados?')) {
+                // Limpiar la lista de grupos seleccionados
+                selectedGroups = [];
+                
+                // Desmarcar todos los checkboxes
+                document.querySelectorAll('.group-checkbox').forEach(cb => {
+                    cb.checked = false;
+                });
+                
+                // Desmarcar el "Select All"
+                const selectAllCheckbox = document.getElementById('select-all');
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.checked = false;
+                }
+                
+                // Actualizar el display
+                updateGroupsDisplay();
+            }
+        }
+
+        function updateSelectAllCheckbox() {
+            const selectAllCheckbox = document.getElementById('select-all');
+            const allCheckboxes = document.querySelectorAll('.group-checkbox');
+            const checkedCheckboxes = document.querySelectorAll('.group-checkbox:checked');
+            
+            if (selectAllCheckbox && allCheckboxes.length > 0) {
+                selectAllCheckbox.checked = allCheckboxes.length === checkedCheckboxes.length;
+            }
         }
 
         async function loadTemplates() {
@@ -1969,6 +2085,14 @@
             if (dropdownTemplateGroups && btnTemplateGroups && !dropdownTemplateGroups.contains(event.target) && !btnTemplateGroups.contains(event.target)) {
                 dropdownTemplateGroups.style.display = 'none';
             }
+
+            // Cerrar el dropdown de grupos
+            const groupsDropdown = document.getElementById('groups-dropdown-menu');
+            const groupsBtn = document.getElementById('groups-selector-btn');
+            
+            if (groupsDropdown && groupsBtn && !groupsDropdown.contains(event.target) && !groupsBtn.contains(event.target)) {
+                groupsDropdown.style.display = 'none';
+            }
         });
 
         // Funciones para mostrar/ocultar opciones avanzadas
@@ -2218,7 +2342,16 @@
             dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
         }
 
-        function showAddCampaignGroupModal() {
+        function showAddCampaignGroupModal(event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            
+            if (selectedGroups.length === 0) {
+                alert('Por favor selecciona al menos un grupo');
+                return;
+            }
+            
             const selectedGroupsText = selectedGroups.map(id => {
                 const group = allGroups.find(g => g.group_id === id);
                 return group ? group.name : id;
