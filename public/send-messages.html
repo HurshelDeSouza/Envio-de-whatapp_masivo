@@ -738,7 +738,7 @@
                                 
                                 <!-- Campo clickeable para desplegar grupos -->
                                 <div style="position: relative;">
-                                    <div onclick="toggleGroupsDropdown()" id="groups-selector-btn" style="width: 100%; padding: 15px; border: 2px solid #d1d5db; border-radius: 10px; background: white; cursor: pointer; min-height: 120px; position: relative;">
+                                    <div onclick="toggleGroupsDropdown()" id="groups-selector-btn" style="width: 100%; padding: 15px; border: 2px solid #d1d5db; border-radius: 10px; background: white; cursor: pointer; min-height: 120px; position: relative; padding-bottom: 60px;">
                                         <span id="groups-placeholder" style="color: #9ca3af; font-size: 1em;">Select groups from the dropdown . . .</span>
                                         
                                         <!-- Contenedor de grupos seleccionados como tags -->
@@ -751,13 +751,9 @@
                                             🗑️
                                         </button>
                                         
-                                        <!-- Botón de guardar (diskette) -->
-                                        <button id="save-groups-btn" onclick="showAddCampaignGroupModal(event)" style="display: none; position: absolute; bottom: 15px; right: 15px; background: #10b981; border: none; border-radius: 6px; padding: 10px 12px; cursor: pointer; transition: all 0.2s; color: white; font-size: 1.2em;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'" title="Guardar selección">
-                                            💾
-                                        </button>
-                                        
-                                        <!-- Botón Campaign Groups dentro del contenedor -->
-                                        <div style="position: absolute; bottom: 15px; left: 15px;">
+                                        <!-- Botones en la parte inferior derecha -->
+                                        <div style="position: absolute; bottom: 15px; right: 15px; display: flex; gap: 10px; align-items: center;">
+                                            <!-- Botón Campaign Groups -->
                                             <div style="position: relative;">
                                                 <button onclick="toggleCampaignGroupsMenu(event)" id="campaign-groups-btn" style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; font-size: 0.9em; min-width: 180px; color: #666; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                                                     <span>Campaign Groups</span>
@@ -765,7 +761,7 @@
                                                 </button>
                                                 
                                                 <!-- Menú desplegable de Campaign Groups -->
-                                                <div id="campaign-groups-dropdown" style="display: none; position: absolute; bottom: 100%; left: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 250px; margin-bottom: 5px; z-index: 1000;">
+                                                <div id="campaign-groups-dropdown" style="display: none; position: absolute; bottom: 100%; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 250px; margin-bottom: 5px; z-index: 1000;">
                                                     <div style="padding: 15px; color: #9ca3af; text-align: center; border-bottom: 1px solid #e5e7eb; font-size: 1.1em;">
                                                         ¡Nada que mostrar!
                                                     </div>
@@ -774,6 +770,11 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            
+                                            <!-- Botón de guardar (diskette) -->
+                                            <button id="save-groups-btn" onclick="showAddCampaignGroupModal(event)" style="display: none; background: #10b981; border: none; border-radius: 6px; padding: 10px 12px; cursor: pointer; transition: all 0.2s; color: white; font-size: 1.2em;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'" title="Guardar selección">
+                                                💾
+                                            </button>
                                         </div>
                                     </div>
                                     
