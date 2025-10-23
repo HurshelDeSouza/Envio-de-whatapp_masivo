@@ -13,11 +13,13 @@ class MessageCampaignService {
     }
 
     /**
-     * Enviar mensajes a múltiples grupos con configuración avanzada
+     * Enviar mensajes a múltiples grupos o números con configuración avanzada
      */
     async sendCampaign(config) {
         const {
             groupIds,
+            numbers,
+            contactIds,
             message,
             attachments = [],
             delays = { min: 5, max: 15 },
@@ -30,8 +32,25 @@ class MessageCampaignService {
         this.isStopped = false;
         this.isPaused = false;
         
+        // Determinar destinatarios
+        let recipients = [];
+        let recipientType = '';
+        
+        if (numbers && numbers.length > 0) {
+            recipients = numbers;
+            recipientType = 'numbers';
+        } else if (groupIds && groupIds.length > 0) {
+            recipients = groupIds;
+            recipientType = 'groups';
+        } else if (contactIds && contactIds.length > 0) {
+            recipients = contactIds;
+            recipientType = 'contacts';
+        } else {
+            throw new Error('No se especificaron destinatarios');
+        }
+        
         const results = {
-            total: groupIds.length,
+            total: recipients.length,
             sent: 0,
             failed: 0,
             details: []
@@ -41,14 +60,14 @@ class MessageCampaignService {
         console.log('📤 INICIANDO CAMPAÑA DE MENSAJES');
         console.log('='.repeat(60));
         console.log(`📱 Número: ${this.phone}`);
-        console.log(`📊 Total grupos: ${groupIds.length}`);
+        console.log(`📊 Total destinatarios (${recipientType}): ${recipients.length}`);
         console.log(`📦 Tamaño de lote: ${batchSize}`);
         console.log(`⏱️  Delay entre mensajes: ${delays.min}-${delays.max} segundos`);
         console.log(`⏸️  Pausa cada ${pauseEvery} mensajes por ${pauseDuration} minutos`);
         console.log('='.repeat(60) + '\n');
 
         // Dividir en lotes
-        const batches = this.createBatches(groupIds, batchSize);
+        const batches = this.createBatches(recipients, batchSize);
         
         for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
             if (this.isStopped) {
@@ -68,18 +87,25 @@ class MessageCampaignService {
 
                 if (this.isStopped) break;
 
-                const groupId = batch[i];
+                const recipient = batch[i];
                 const messageNumber = batchIndex * batchSize + i + 1;
 
                 try {
-                    console.log(`\n[${messageNumber}/${results.total}] Enviando a grupo: ${groupId}`);
+                    console.log(`\n[${messageNumber}/${results.total}] Enviando a ${recipientType}: ${recipient}`);
                     
-                    // Enviar mensaje
-                    await this.sendMessageToGroup(groupId, message, attachments);
+                    // Enviar mensaje según el tipo de destinatario
+                    if (recipientType === 'numbers') {
+                        await this.sendMessageToNumber(recipient, message, attachments);
+                    } else if (recipientType === 'groups') {
+                        await this.sendMessageToGroup(recipient, message, attachments);
+                    } else if (recipientType === 'contacts') {
+                        await this.sendMessageToContact(recipient, message, attachments);
+                    }
                     
                     results.sent++;
                     results.details.push({
-                        groupId,
+                        recipient,
+                        type: recipientType,
                         status: 'sent',
                         timestamp: new Date(),
                         error: null
@@ -102,10 +128,11 @@ class MessageCampaignService {
                     }
 
                 } catch (error) {
-                    console.error(`❌ Error enviando a ${groupId}:`, error.message);
+                    console.error(`❌ Error enviando a ${recipient}:`, error.message);
                     results.failed++;
                     results.details.push({
-                        groupId,
+                        recipient,
+                        type: recipientType,
                         status: 'failed',
                         timestamp: new Date(),
                         error: error.message
@@ -137,6 +164,62 @@ class MessageCampaignService {
      */
     async sendMessageToGroup(groupId, message, attachments = []) {
         const chatId = `${groupId}@g.us`;
+
+        // Enviar archivos adjuntos si hay
+        for (const attachment of attachments) {
+            if (attachment.type === 'image') {
+                await this.client.sendMessage(chatId, attachment.data, {
+                    caption: attachment.caption || ''
+                });
+            } else if (attachment.type === 'document') {
+                await this.client.sendMessage(chatId, attachment.data, {
+                    caption: attachment.caption || ''
+                });
+            }
+        }
+
+        // Enviar mensaje de texto
+        if (message && message.trim()) {
+            await this.client.sendMessage(chatId, message);
+        }
+
+        return true;
+    }
+
+    /**
+     * Enviar mensaje a un número específico
+     */
+    async sendMessageToNumber(number, message, attachments = []) {
+        // Limpiar el número (solo dígitos)
+        const cleanNumber = number.replace(/\D/g, '');
+        const chatId = `${cleanNumber}@c.us`;
+
+        // Enviar archivos adjuntos si hay
+        for (const attachment of attachments) {
+            if (attachment.type === 'image') {
+                await this.client.sendMessage(chatId, attachment.data, {
+                    caption: attachment.caption || ''
+                });
+            } else if (attachment.type === 'document') {
+                await this.client.sendMessage(chatId, attachment.data, {
+                    caption: attachment.caption || ''
+                });
+            }
+        }
+
+        // Enviar mensaje de texto
+        if (message && message.trim()) {
+            await this.client.sendMessage(chatId, message);
+        }
+
+        return true;
+    }
+
+    /**
+     * Enviar mensaje a un contacto específico
+     */
+    async sendMessageToContact(contactId, message, attachments = []) {
+        const chatId = `${contactId}@c.us`;
 
         // Enviar archivos adjuntos si hay
         for (const attachment of attachments) {

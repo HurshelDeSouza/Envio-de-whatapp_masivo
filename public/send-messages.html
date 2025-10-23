@@ -1320,6 +1320,7 @@
         const socket = io();
         let selectedGroups = [];
         let allGroups = [];
+        let selectedNumbers = [];
         let phone = '';
         let campaignRunning = false;
 
@@ -1355,6 +1356,7 @@
             loadTemplates();
             loadScheduledCampaigns();
             setupSocketListeners();
+            initCountriesList();
         };
 
         function switchTab(tabName) {
@@ -1407,9 +1409,6 @@
             });
         }
 
-        // Variables para números
-        let selectedNumbers = [];
-
         function handleNumberInput(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -1417,11 +1416,28 @@
                 const textarea = event.target;
                 const lines = textarea.value.split('\n');
                 
+                // Obtener el código de país seleccionado
+                const countryCodeElement = document.getElementById('selected-code');
+                const countryCode = countryCodeElement ? countryCodeElement.textContent.replace('+', '') : '1';
+                
+                console.log('Código de país seleccionado:', countryCode);
+                
                 // Procesar cada línea
                 lines.forEach(line => {
                     const cleanNum = line.trim().replace(/\D/g, ''); // Solo dígitos
-                    if (cleanNum && !selectedNumbers.includes(cleanNum)) {
-                        selectedNumbers.push(cleanNum);
+                    if (cleanNum) {
+                        console.log('Número ingresado (limpio):', cleanNum);
+                        
+                        // SIEMPRE agregar el código de país al inicio
+                        // El usuario debe escribir solo el número LOCAL (sin código de país)
+                        const fullNumber = countryCode + cleanNum;
+                        
+                        console.log('Número completo con código de país:', fullNumber);
+                        
+                        // Agregar solo si no existe ya
+                        if (!selectedNumbers.includes(fullNumber)) {
+                            selectedNumbers.push(fullNumber);
+                        }
                     }
                 });
                 
@@ -1435,13 +1451,15 @@
 
         function updateNumbersDisplay() {
             const tagsContainer = document.getElementById('numbers-selected-tags');
-            const countryCode = document.getElementById('selected-code').textContent;
             
             // Crear los tags para cada número
             tagsContainer.innerHTML = selectedNumbers.map(num => {
+                // Formatear el número para mostrar: +XX XXXXXXXXX
+                const formattedNum = '+' + num;
+                
                 return `
                     <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; background: #d1fae5; border: 2px solid #10b981; border-radius: 8px; font-size: 0.95em; color: #065f46; font-family: monospace;">
-                        <span>${countryCode} ${num}</span>
+                        <span>${formattedNum}</span>
                         <button onclick="removeNumber(event, '${num}')" style="background: none; border: none; cursor: pointer; font-size: 1.1em; color: #065f46; padding: 0; display: flex; align-items: center; font-weight: bold;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#065f46'">
                             ×
                         </button>
@@ -1734,6 +1752,7 @@
 
         let allCountries = countries;
         let selectedCountryCode = '+1';
+        let selectedCountry = { code: '+1', iso: 'CA', name: 'Canada' };
 
         // Inicializar lista de países
         function initCountriesList() {
@@ -1776,11 +1795,13 @@
 
         function selectCountry(code, iso, name) {
             selectedCountryCode = code;
+            selectedCountry = { code: code, iso: iso, name: name };
             const flagImg = document.getElementById('selected-flag-img');
             flagImg.src = `https://flagcdn.com/w40/${iso.toLowerCase()}.png`;
             flagImg.alt = iso;
             document.getElementById('selected-code').textContent = code;
             document.getElementById('country-dropdown').style.display = 'none';
+            console.log('País seleccionado:', selectedCountry);
         }
 
         function filterCountries() {
@@ -2059,71 +2080,111 @@
             // Obtener el modo seleccionado (numbers, groups, contacts)
             const selectedMode = document.querySelector('input[name="send-mode"]:checked').value;
             
-            // Validar según el modo seleccionado
+            let recipients = [];
+            let message = '';
+            
+            // Validar y obtener datos según el modo seleccionado
             if (selectedMode === 'numbers') {
-                const numbersInput = document.getElementById('numbers-input').value.trim();
-                if (!numbersInput) {
-                    showStatus('error', 'Por favor selecciona al menos un número');
+                // Obtener números de los tags
+                if (selectedNumbers.length === 0) {
+                    showStatus('error', 'Por favor agrega al menos un número');
                     return;
                 }
+                recipients = selectedNumbers;
+                message = document.getElementById('message-numbers').value.trim();
             } else if (selectedMode === 'groups') {
                 if (selectedGroups.length === 0) {
                     showStatus('error', 'Por favor selecciona al menos un grupo');
                     return;
                 }
+                recipients = selectedGroups;
+                message = document.getElementById('message-groups').value.trim();
             } else if (selectedMode === 'contacts') {
-                const selectedContacts = document.querySelectorAll('#contacts-select option:checked');
                 if (selectedContacts.length === 0) {
                     showStatus('error', 'Por favor selecciona al menos un contacto');
                     return;
                 }
+                recipients = selectedContacts;
+                message = document.getElementById('message-contacts').value.trim();
             }
 
-            const message = document.getElementById('message').value.trim();
             if (!message) {
                 showStatus('error', 'Por favor escribe un mensaje');
                 return;
             }
 
+            // Obtener configuración según el modo
+            const delayMinId = selectedMode === 'numbers' ? 'delay-min' : `delay-min-${selectedMode}`;
+            const delayMaxId = selectedMode === 'numbers' ? 'delay-max' : `delay-max-${selectedMode}`;
+            const batchSizeId = selectedMode === 'numbers' ? 'batch-size' : `batch-size-${selectedMode}`;
+            const batchDelayId = selectedMode === 'numbers' ? 'batch-delay' : `batch-delay-${selectedMode}`;
+
             const config = {
                 delays: {
-                    min: parseInt(document.getElementById('delay-min').value),
-                    max: parseInt(document.getElementById('delay-max').value)
+                    min: parseInt(document.getElementById(delayMinId)?.value || 5),
+                    max: parseInt(document.getElementById(delayMaxId)?.value || 15)
                 },
-                batchSize: parseInt(document.getElementById('batch-size').value),
-                batchDelay: parseInt(document.getElementById('batch-delay').value),
-                pauseEvery: parseInt(document.getElementById('pause-every').value),
-                pauseDuration: parseInt(document.getElementById('pause-duration').value)
+                batchSize: parseInt(document.getElementById(batchSizeId)?.value || 50),
+                batchDelay: parseInt(document.getElementById(batchDelayId)?.value || 30)
             };
 
             try {
                 showStatus('info', '🚀 Iniciando campaña...');
-                campaignRunning = true;
                 document.getElementById('campaign-controls').style.display = 'flex';
+
+                // Los números ya están guardados tal como el usuario los escribió
+                // Solo limpiarlos de caracteres no numéricos
+                let formattedRecipients = recipients;
+                if (selectedMode === 'numbers') {
+                    console.log('Números originales:', recipients);
+                    
+                    formattedRecipients = recipients.map(num => {
+                        // Limpiar el número (solo dígitos)
+                        const cleanNum = num.replace(/\D/g, '');
+                        return cleanNum;
+                    });
+                    
+                    console.log('Números a enviar:', formattedRecipients);
+                }
+
+                const payload = {
+                    phone,
+                    message,
+                    config,
+                    mode: selectedMode
+                };
+
+                // Agregar recipients según el modo
+                if (selectedMode === 'numbers') {
+                    payload.numbers = formattedRecipients;
+                } else if (selectedMode === 'groups') {
+                    payload.groupIds = recipients;
+                } else if (selectedMode === 'contacts') {
+                    payload.contactIds = recipients;
+                }
+
+                console.log('Enviando campaña:', payload);
 
                 const response = await fetch('/api/campaigns/send', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        phone,
-                        groupIds: selectedGroups,
-                        message,
-                        config
-                    })
+                    body: JSON.stringify(payload)
                 });
 
                 const result = await response.json();
                 
                 if (result.success) {
-                    showStatus('info', '📤 Campaña en progreso...');
+                    showStatus('success', '✅ Campaña iniciada exitosamente');
+                    setTimeout(() => {
+                        showStatus('info', '📤 Enviando mensajes...');
+                    }, 1000);
                 } else {
-                    showStatus('error', result.message);
-                    campaignRunning = false;
+                    showStatus('error', result.message || 'Error al iniciar campaña');
                     document.getElementById('campaign-controls').style.display = 'none';
                 }
             } catch (error) {
+                console.error('Error al enviar campaña:', error);
                 showStatus('error', 'Error: ' + error.message);
-                campaignRunning = false;
                 document.getElementById('campaign-controls').style.display = 'none';
             }
         }

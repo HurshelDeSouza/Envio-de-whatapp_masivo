@@ -729,12 +729,25 @@ app.get('/api/campaigns/paused', (req, res) => {
 // API: Ejecutar campaña con configuración avanzada
 app.post('/api/campaigns/send', async (req, res) => {
     try {
-        const { phone, groupIds, message, config } = req.body;
+        const { phone, groupIds, numbers, contactIds, message, config, mode } = req.body;
         
-        if (!phone || !groupIds || !message) {
+        if (!phone || !message) {
             return res.status(400).json({
                 success: false,
-                message: 'Faltan parámetros requeridos'
+                message: 'Faltan parámetros requeridos (phone y message)'
+            });
+        }
+
+        // Validar que haya al menos un destinatario
+        const hasGroupIds = groupIds && Array.isArray(groupIds) && groupIds.length > 0;
+        const hasNumbers = numbers && Array.isArray(numbers) && numbers.length > 0;
+        const hasContactIds = contactIds && Array.isArray(contactIds) && contactIds.length > 0;
+        
+        if (!hasGroupIds && !hasNumbers && !hasContactIds) {
+            console.log('Validación de destinatarios falló:', { groupIds, numbers, contactIds });
+            return res.status(400).json({
+                success: false,
+                message: 'Debes especificar al menos un destinatario válido'
             });
         }
 
@@ -751,12 +764,27 @@ app.post('/api/campaigns/send', async (req, res) => {
         // Crear servicio de campaña
         const campaignService = new MessageCampaignService(session.client, phone);
         
-        // Ejecutar campaña en segundo plano
-        campaignService.sendCampaign({
-            groupIds,
+        // Preparar datos de campaña según el modo
+        const campaignData = {
             message,
             ...config
-        }).then(results => {
+        };
+
+        if (mode === 'numbers' && numbers) {
+            campaignData.numbers = numbers;
+        } else if (mode === 'groups' && groupIds) {
+            campaignData.groupIds = groupIds;
+        } else if (mode === 'contacts' && contactIds) {
+            campaignData.contactIds = contactIds;
+        } else {
+            // Fallback para compatibilidad con código anterior
+            if (groupIds) campaignData.groupIds = groupIds;
+            if (numbers) campaignData.numbers = numbers;
+            if (contactIds) campaignData.contactIds = contactIds;
+        }
+        
+        // Ejecutar campaña en segundo plano
+        campaignService.sendCampaign(campaignData).then(results => {
             io.emit('campaign-completed', { phone, results });
         }).catch(error => {
             io.emit('campaign-error', { phone, error: error.message });
@@ -764,10 +792,11 @@ app.post('/api/campaigns/send', async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Campaña iniciada'
+            message: 'Campaña iniciada exitosamente'
         });
 
     } catch (error) {
+        console.error('Error al iniciar campaña:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
