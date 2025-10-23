@@ -424,7 +424,7 @@
                                 
                             <!-- Área de contenido con tags de números -->
                             <div style="padding: 15px;">
-                                <!-- Contenedor único con selector de país, tags y textarea -->
+                                <!-- Contenedor único con selector de país, tags, textarea y botones -->
                                 <div style="border: 2px solid #d1d5db; border-radius: 10px; background: white; padding: 15px; min-height: 150px; position: relative;">
                                     <!-- Selector de país dentro del contenedor -->
                                     <div style="position: relative; display: inline-block; margin-bottom: 10px;">
@@ -454,38 +454,38 @@
                                     </div>
                                     
                                     <!-- Textarea para agregar números -->
-                                    <textarea id="numbers-input" placeholder="Escriba un número y presione Enter..." style="width: 100%; min-height: 80px; font-family: monospace; padding: 0; border: none; font-size: 0.95em; resize: none; outline: none; background: transparent;" onkeydown="handleNumberInput(event)"></textarea>
-                                </div>
-                            
-                            <!-- Botones debajo del contenedor -->
-                            <div style="display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-top: 15px;">
-                                <button onclick="showExampleNumbers()" style="display: flex; align-items: center; gap: 5px; padding: 8px 16px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;">
-                                    📋 Ejemplo
-                                </button>
-                                
-                                <div style="display: flex; gap: 10px;">
-                                    <button onclick="uploadNumbersFile()" style="display: flex; align-items: center; gap: 5px; padding: 8px 16px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;">
-                                        📤 Subir Excel
-                                    </button>
+                                    <textarea id="numbers-input" placeholder="Escriba un número y presione Enter..." style="width: 100%; min-height: 80px; font-family: monospace; padding: 0; border: none; font-size: 0.95em; resize: none; outline: none; background: transparent; margin-bottom: 15px;" onkeydown="handleNumberInput(event)"></textarea>
                                     
-                                    <div style="position: relative;">
-                                        <button onclick="toggleCampaignNumbersMenu()" id="campaign-numbers-btn" style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; font-size: 0.9em; min-width: 180px; color: #666; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                                            <span>Campaign Numbers</span>
-                                            <span style="font-size: 0.8em;">▼</span>
+                                    <!-- Botones dentro del contenedor -->
+                                    <div style="display: flex; gap: 10px; align-items: center; justify-content: space-between; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+                                        <button onclick="showExampleNumbers()" style="display: flex; align-items: center; gap: 5px; padding: 8px 16px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;">
+                                            📋 Ejemplo
                                         </button>
                                         
-                                        <!-- Menú desplegable de Campaign Numbers -->
-                                        <div id="campaign-numbers-dropdown" style="display: none; position: absolute; bottom: 100%; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 250px; margin-bottom: 5px; z-index: 1000;">
-                                            <div style="padding: 15px; color: #9ca3af; text-align: center; border-bottom: 1px solid #e5e7eb; font-size: 1.1em;">
-                                                ¡Nada que mostrar!
-                                            </div>
-                                            <div onclick="showAddCampaignNumberModal()" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">
-                                                📋 <span style="color: #10b981;">Add Template</span>
+                                        <div style="display: flex; gap: 10px;">
+                                            <button onclick="uploadNumbersFile()" style="display: flex; align-items: center; gap: 5px; padding: 8px 16px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;">
+                                                📤 Subir Excel
+                                            </button>
+                                            
+                                            <div style="position: relative;">
+                                                <button onclick="toggleCampaignNumbersMenu()" id="campaign-numbers-btn" style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; font-size: 0.9em; min-width: 180px; color: #666; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                                    <span>Campaign Numbers</span>
+                                                    <span style="font-size: 0.8em;">▼</span>
+                                                </button>
+                                                
+                                                <!-- Menú desplegable de Campaign Numbers -->
+                                                <div id="campaign-numbers-dropdown" style="display: none; position: absolute; bottom: 100%; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 250px; margin-bottom: 5px; z-index: 1000;">
+                                                    <div style="padding: 15px; color: #9ca3af; text-align: center; border-bottom: 1px solid #e5e7eb; font-size: 1.1em;">
+                                                        ¡Nada que mostrar!
+                                                    </div>
+                                                    <div onclick="showAddCampaignNumberModal()" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">
+                                                        📋 <span style="color: #10b981;">Add Template</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
                         </div>
                     </div>
 
