@@ -752,6 +752,19 @@
         </div>
     </div>
 
+    <!-- Modal para configurar mensaje con iframe -->
+    <div id="configure-message-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 1400px; width: 98%; max-height: 95vh; padding: 0; overflow: hidden; border-radius: 15px;">
+            <div class="modal-header" style="padding: 15px 20px; border-bottom: 2px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: white;">
+                <h2 style="margin: 0;">📝 Configurar Mensaje</h2>
+                <span class="close-btn" onclick="closeConfigureMessageModal()" style="cursor: pointer; font-size: 2em; color: #666; line-height: 1;">&times;</span>
+            </div>
+            <div class="modal-body" style="padding: 0; height: calc(95vh - 70px);">
+                <iframe id="configure-iframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal para enviar mensaje -->
     <div id="message-modal" class="modal">
         <div class="modal-content">
@@ -985,12 +998,20 @@
         }
 
         function openMessageModal(group) {
-            // Redirigir a la página de enviar mensajes con el modo Groups seleccionado
-            window.location.href = `/send-messages?phone=${encodeURIComponent(userPhone)}&mode=groups`;
+            // Abrir el modal de configurar mensaje con iframe
+            const iframe = document.getElementById('configure-iframe');
+            iframe.src = `/send-messages?phone=${encodeURIComponent(userPhone)}&mode=groups`;
+            document.getElementById('configure-message-modal').style.display = 'flex';
         }
 
         function closeMessageModal() {
             document.getElementById('message-modal').style.display = 'none';
+        }
+
+        function closeConfigureMessageModal() {
+            document.getElementById('configure-message-modal').style.display = 'none';
+            // Limpiar el iframe
+            document.getElementById('configure-iframe').src = '';
         }
 
         async function sendBroadcastMessage() {
