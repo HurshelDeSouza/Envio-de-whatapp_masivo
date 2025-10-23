@@ -1027,9 +1027,23 @@
                                 
                                 <!-- Campo clickeable para desplegar contactos -->
                                 <div style="position: relative;">
-                                    <div onclick="toggleContactsDropdown()" id="contacts-selector-btn" style="width: 100%; padding: 15px; border: 2px solid #d1d5db; border-radius: 10px; background: white; cursor: pointer; min-height: 120px; display: flex; align-items: flex-start; justify-content: space-between;">
+                                    <div onclick="toggleContactsDropdown()" id="contacts-selector-btn" style="width: 100%; padding: 15px; border: 2px solid #d1d5db; border-radius: 10px; background: white; cursor: pointer; min-height: 120px; position: relative;">
                                         <span id="contacts-placeholder" style="color: #9ca3af; font-size: 1em;">Select contacts from the dropdown . . .</span>
-                                        <span id="contacts-selected-display" style="color: #333; font-size: 0.95em; display: none;"></span>
+                                        
+                                        <!-- Contenedor de contactos seleccionados como tags -->
+                                        <div id="contacts-selected-tags" style="display: none; flex-wrap: wrap; gap: 10px;">
+                                            <!-- Los tags se agregarán aquí dinámicamente -->
+                                        </div>
+                                        
+                                        <!-- Botón de basurero para eliminar todos -->
+                                        <button id="clear-all-contacts-btn" onclick="clearAllContacts(event)" style="display: none; position: absolute; top: 15px; right: 15px; background: #f3f4f6; border: 2px solid #e5e7eb; border-radius: 6px; padding: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#fee2e2'; this.style.borderColor='#fca5a5'" onmouseout="this.style.background='#f3f4f6'; this.style.borderColor='#e5e7eb'">
+                                            🗑️
+                                        </button>
+                                        
+                                        <!-- Botón de guardar (diskette) -->
+                                        <button id="save-contacts-btn" onclick="showAddCampaignContactModal(event)" style="display: none; position: absolute; bottom: 15px; right: 15px; background: #10b981; border: none; border-radius: 6px; padding: 10px 12px; cursor: pointer; transition: all 0.2s; color: white; font-size: 1.2em;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'" title="Guardar selección">
+                                            💾
+                                        </button>
                                     </div>
                                     
                                     <!-- Dropdown de contactos -->
@@ -2887,21 +2901,82 @@
 
         function updateContactsDisplay() {
             const placeholder = document.getElementById('contacts-placeholder');
-            const display = document.getElementById('contacts-selected-display');
+            const tagsContainer = document.getElementById('contacts-selected-tags');
+            const clearAllBtn = document.getElementById('clear-all-contacts-btn');
+            const saveBtn = document.getElementById('save-contacts-btn');
             
             if (selectedContacts.length === 0) {
                 placeholder.style.display = 'block';
-                display.style.display = 'none';
+                tagsContainer.style.display = 'none';
+                clearAllBtn.style.display = 'none';
+                saveBtn.style.display = 'none';
             } else {
                 placeholder.style.display = 'none';
-                display.style.display = 'block';
+                tagsContainer.style.display = 'flex';
+                clearAllBtn.style.display = 'block';
+                saveBtn.style.display = 'block';
                 
-                const selectedNames = selectedContacts.map(id => {
+                // Crear los tags para cada contacto seleccionado
+                tagsContainer.innerHTML = selectedContacts.map(id => {
                     const contact = allContacts.find(c => c.id === id);
-                    return contact ? contact.name : id;
+                    const contactName = contact ? contact.name : id;
+                    
+                    return `
+                        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; background: #d1fae5; border: 2px solid #10b981; border-radius: 8px; font-size: 0.95em; color: #065f46;">
+                            <span>${contactName}</span>
+                            <button onclick="removeContact(event, '${id}')" style="background: none; border: none; cursor: pointer; font-size: 1.1em; color: #065f46; padding: 0; display: flex; align-items: center; font-weight: bold;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#065f46'">
+                                ×
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function removeContact(event, contactId) {
+            event.stopPropagation();
+            
+            // Remover el contacto de la lista de seleccionados
+            selectedContacts = selectedContacts.filter(id => id !== contactId);
+            
+            // Desmarcar el checkbox correspondiente
+            const checkbox = document.querySelector(`.contact-checkbox[value="${contactId}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+            }
+            
+            // Actualizar el display
+            updateContactsDisplay();
+            
+            // Actualizar el checkbox "Select All" si es necesario
+            const allCheckboxes = document.querySelectorAll('.contact-checkbox');
+            const checkedCheckboxes = document.querySelectorAll('.contact-checkbox:checked');
+            const selectAllCheckbox = document.getElementById('select-all-contacts');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = allCheckboxes.length === checkedCheckboxes.length && allCheckboxes.length > 0;
+            }
+        }
+
+        function clearAllContacts(event) {
+            event.stopPropagation();
+            
+            if (confirm('¿Deseas eliminar todos los contactos seleccionados?')) {
+                // Desmarcar todos los checkboxes
+                document.querySelectorAll('.contact-checkbox').forEach(cb => {
+                    cb.checked = false;
                 });
                 
-                display.textContent = `${selectedContacts.length} contacto(s) seleccionado(s): ${selectedNames.slice(0, 3).join(', ')}${selectedContacts.length > 3 ? '...' : ''}`;
+                // Desmarcar el "Select All"
+                const selectAllCheckbox = document.getElementById('select-all-contacts');
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.checked = false;
+                }
+                
+                // Limpiar la lista de seleccionados
+                selectedContacts = [];
+                
+                // Actualizar el display
+                updateContactsDisplay();
             }
         }
 
@@ -2975,8 +3050,16 @@
             dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
         }
 
-        function showAddCampaignContactModal() {
-            alert('Funcionalidad en desarrollo');
+        function showAddCampaignContactModal(event) {
+            if (event) event.stopPropagation();
+            
+            const selectedContactsText = selectedContacts.map(id => {
+                const contact = allContacts.find(c => c.id === id);
+                return contact ? contact.name : id;
+            }).join('\n');
+            
+            // Aquí puedes abrir un modal para guardar la campaña
+            alert('Funcionalidad de guardar Campaign Contacts en desarrollo\n\nContactos seleccionados:\n' + selectedContactsText);
         }
 
         async function sendCampaignContacts() {
