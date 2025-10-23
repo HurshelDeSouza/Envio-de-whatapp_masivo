@@ -985,10 +985,8 @@
         }
 
         function openMessageModal(group) {
-            document.getElementById('modal-group-name').textContent = group.name || 'Sin nombre';
-            document.getElementById('modal-group-id').value = group.group_id;
-            document.getElementById('message-text').value = '';
-            document.getElementById('message-modal').style.display = 'flex';
+            // Redirigir a la página de enviar mensajes con el modo Groups seleccionado
+            window.location.href = `/send-messages?phone=${encodeURIComponent(userPhone)}&mode=groups`;
         }
 
         function closeMessageModal() {
@@ -1038,7 +1036,7 @@
         }
 
         function goToSendMessages() {
-            window.location.href = `/send-messages?phone=${encodeURIComponent(userPhone)}`;
+            window.location.href = `/send-messages?phone=${encodeURIComponent(userPhone)}&mode=groups`;
         }
 
         function changePhone() {

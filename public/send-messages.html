@@ -1083,11 +1083,21 @@
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
             phone = urlParams.get('phone');
+            const mode = urlParams.get('mode');
             
             if (!phone) {
                 alert('Número de teléfono no especificado');
                 window.location.href = '/';
                 return;
+            }
+
+            // Si viene el parámetro mode=groups, seleccionar automáticamente Groups
+            if (mode === 'groups') {
+                const groupsRadio = document.querySelector('input[name="send-mode"][value="groups"]');
+                if (groupsRadio) {
+                    groupsRadio.checked = true;
+                    changeSendMode('groups');
+                }
             }
 
             loadGroups();
