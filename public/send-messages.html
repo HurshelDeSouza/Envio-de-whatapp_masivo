@@ -755,6 +755,26 @@
                                         <button id="save-groups-btn" onclick="showAddCampaignGroupModal(event)" style="display: none; position: absolute; bottom: 15px; right: 15px; background: #10b981; border: none; border-radius: 6px; padding: 10px 12px; cursor: pointer; transition: all 0.2s; color: white; font-size: 1.2em;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'" title="Guardar selección">
                                             💾
                                         </button>
+                                        
+                                        <!-- Botón Campaign Groups dentro del contenedor -->
+                                        <div style="position: absolute; bottom: 15px; left: 15px;">
+                                            <div style="position: relative;">
+                                                <button onclick="toggleCampaignGroupsMenu(event)" id="campaign-groups-btn" style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; font-size: 0.9em; min-width: 180px; color: #666; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                                    <span>Campaign Groups</span>
+                                                    <span style="font-size: 0.8em;">▼</span>
+                                                </button>
+                                                
+                                                <!-- Menú desplegable de Campaign Groups -->
+                                                <div id="campaign-groups-dropdown" style="display: none; position: absolute; bottom: 100%; left: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 250px; margin-bottom: 5px; z-index: 1000;">
+                                                    <div style="padding: 15px; color: #9ca3af; text-align: center; border-bottom: 1px solid #e5e7eb; font-size: 1.1em;">
+                                                        ¡Nada que mostrar!
+                                                    </div>
+                                                    <div onclick="showAddCampaignGroupModal()" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">
+                                                        📋 <span style="color: #10b981;">Add Template</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                     <!-- Dropdown de grupos -->
@@ -773,26 +793,6 @@
                                         <!-- Lista de grupos -->
                                         <div id="groups-list" style="max-height: 300px; overflow-y: auto; padding: 10px;">
                                             <p style="color: #666; text-align: center; padding: 20px;">Cargando grupos...</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Botón Campaign Groups -->
-                                <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
-                                    <div style="position: relative;">
-                                        <button onclick="toggleCampaignGroupsMenu()" id="campaign-groups-btn" style="padding: 10px 20px; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; font-size: 0.95em; min-width: 200px; color: #666; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                                            <span>Campaign Groups</span>
-                                            <span style="font-size: 0.8em;">▼</span>
-                                        </button>
-                                        
-                                        <!-- Menú desplegable de Campaign Groups -->
-                                        <div id="campaign-groups-dropdown" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 250px; margin-top: 5px; z-index: 1000;">
-                                            <div style="padding: 15px; color: #9ca3af; text-align: center; border-bottom: 1px solid #e5e7eb; font-size: 1.1em;">
-                                                ¡Nada que mostrar!
-                                            </div>
-                                            <div onclick="showAddCampaignGroupModal()" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">
-                                                📋 <span style="color: #10b981;">Add Template</span>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -3302,6 +3302,38 @@
             const dropdown = document.getElementById('paused-campaigns-contacts-dropdown');
             dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
         }
+
+        // ============================================
+        // FUNCIONES PARA CAMPAIGN GROUPS
+        // ============================================
+
+        function toggleCampaignGroupsMenu(event) {
+            if (event) event.stopPropagation();
+            const dropdown = document.getElementById('campaign-groups-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showAddCampaignGroupModal(event) {
+            if (event) event.stopPropagation();
+            
+            const selectedGroupsText = selectedGroups.map(id => {
+                const group = allGroups.find(g => g.id === id);
+                return group ? group.name : id;
+            }).join('\n');
+            
+            // Aquí puedes abrir un modal para guardar la campaña
+            alert('Funcionalidad de guardar Campaign Groups en desarrollo\n\nGrupos seleccionados:\n' + selectedGroupsText);
+        }
+
+        // Cerrar el dropdown de Campaign Groups al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('campaign-groups-dropdown');
+            const btn = document.getElementById('campaign-groups-btn');
+            
+            if (dropdown && btn && !dropdown.contains(event.target) && !btn.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
