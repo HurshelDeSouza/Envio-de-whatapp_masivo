@@ -1017,24 +1017,253 @@
 
                 <!-- Sección para Contacts -->
                 <div id="section-contacts" style="display: none;">
-                    <div class="form-group">
-                        <label>Seleccionar contactos para enviar mensaje</label>
-                        <p style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
-                            Seleccione contactos desde el dropdown...
-                        </p>
-                        <select id="contacts-select" multiple style="min-height: 150px;">
-                            <option value="">Cargando contactos...</option>
-                        </select>
+                    <!-- Layout de dos columnas -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        
+                        <!-- COLUMNA IZQUIERDA -->
+                        <div>
+                            <div class="form-group">
+                                <label style="font-weight: bold; font-size: 1.1em; margin-bottom: 10px; display: block;">Select contacts to message</label>
+                                
+                                <!-- Campo clickeable para desplegar contactos -->
+                                <div style="position: relative;">
+                                    <div onclick="toggleContactsDropdown()" id="contacts-selector-btn" style="width: 100%; padding: 15px; border: 2px solid #d1d5db; border-radius: 10px; background: white; cursor: pointer; min-height: 120px; display: flex; align-items: flex-start; justify-content: space-between;">
+                                        <span id="contacts-placeholder" style="color: #9ca3af; font-size: 1em;">Select contacts from the dropdown . . .</span>
+                                        <span id="contacts-selected-display" style="color: #333; font-size: 0.95em; display: none;"></span>
+                                    </div>
+                                    
+                                    <!-- Dropdown de contactos -->
+                                    <div id="contacts-dropdown-menu" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 5px; z-index: 1000; max-height: 400px; overflow: hidden;">
+                                        <!-- Barra de búsqueda -->
+                                        <div style="padding: 15px; border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
+                                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                                <input type="text" id="search-contacts" placeholder="🔍 Buscar contacto por nombre" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95em;" oninput="filterContacts()" onclick="event.stopPropagation()">
+                                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; white-space: nowrap; font-weight: 500;">
+                                                    <input type="checkbox" id="select-all-contacts" onchange="toggleSelectAllContacts()" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;">
+                                                    Select All
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Lista de contactos -->
+                                        <div id="contacts-list" style="max-height: 300px; overflow-y: auto; padding: 10px;">
+                                            <p style="color: #666; text-align: center; padding: 20px;">Cargando contactos...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Botón Campaign Contacts -->
+                                <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
+                                    <div style="position: relative;">
+                                        <button onclick="toggleCampaignContactsMenu()" id="campaign-contacts-btn" style="padding: 10px 20px; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; font-size: 0.95em; min-width: 200px; color: #666; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                            <span>Campaign Contacts</span>
+                                            <span style="font-size: 0.8em;">▼</span>
+                                        </button>
+                                        
+                                        <!-- Menú desplegable de Campaign Contacts -->
+                                        <div id="campaign-contacts-dropdown" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 250px; margin-top: 5px; z-index: 1000;">
+                                            <div style="padding: 15px; color: #9ca3af; text-align: center; border-bottom: 1px solid #e5e7eb; font-size: 1.1em;">
+                                                ¡Nada que mostrar!
+                                            </div>
+                                            <div onclick="showAddCampaignContactModal()" style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">
+                                                📋 <span style="color: #10b981;">Add Template</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+
+                    <!-- Área de mensaje con opciones de formato -->
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>Introducir mensaje</label>
+                        <div style="border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                            <!-- Barra de formato -->
+                            <div style="background: #f9fafb; padding: 8px; border-bottom: 1px solid #e5e7eb; display: flex; gap: 10px; align-items: center;">
+                                <button onclick="formatTextContacts('bold')" style="padding: 5px 10px; border: 1px solid #e5e7eb; background: white; border-radius: 4px; cursor: pointer; font-weight: bold;">*text*</button>
+                                <button onclick="formatTextContacts('italic')" style="padding: 5px 10px; border: 1px solid #e5e7eb; background: white; border-radius: 4px; cursor: pointer; font-style: italic;">_text_</button>
+                                <button onclick="formatTextContacts('strike')" style="padding: 5px 10px; border: 1px solid #e5e7eb; background: white; border-radius: 4px; cursor: pointer; text-decoration: line-through;">~text~</button>
+                                <button onclick="formatTextContacts('code')" style="padding: 5px 10px; border: 1px solid #e5e7eb; background: white; border-radius: 4px; cursor: pointer; font-family: monospace;">`text`</button>
+                                <span style="color: #999; margin-left: auto;">EMOJIS</span>
+                            </div>
+                            
+                            <!-- Área de texto -->
+                            <textarea id="message-contacts" placeholder="Escribe tu mensaje aquí..." style="width: 100%; min-height: 150px; border: none; padding: 15px; font-size: 1em; resize: vertical; font-family: inherit;"></textarea>
+                            
+                            <!-- Barra inferior con clip y template -->
+                            <div style="background: #f9fafb; padding: 10px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; align-items: center;">
+                                <button onclick="attachFileContacts()" style="padding: 8px 15px; border: 1px solid #e5e7eb; background: white; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                    📎
+                                </button>
+                                
+                                <div style="position: relative;">
+                                    <button onclick="toggleTemplateMenuContacts()" id="template-contacts-btn" style="padding: 8px 15px; border: 1px solid #e5e7eb; background: white; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                        Template ▼
+                                    </button>
+                                    
+                                    <!-- Menú desplegable de templates -->
+                                    <div id="template-contacts-dropdown" style="display: none; position: absolute; bottom: 100%; left: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 200px; margin-bottom: 5px; z-index: 1000;">
+                                        <div style="padding: 10px; color: #666; text-align: center; border-bottom: 1px solid #e5e7eb;">
+                                            ¡Nada que mostrar!
+                                        </div>
+                                        <div onclick="showAddTemplateModalContacts()" style="padding: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: bold; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">
+                                            📋 Add Template
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div style="margin-top: 10px;">
-                        <input type="text" id="search-contacts" placeholder="🔍 Buscar contactos por nombre..." style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;" oninput="filterContacts()">
+
+                    <!-- Botón Enviar Mensajes -->
+                    <button class="btn-primary" onclick="sendCampaignContacts()" style="width: 100%; margin-top: 20px;">
+                        📤 Enviar Mensajes
+                    </button>
+                    
+                    <div class="campaign-controls" id="campaign-controls-contacts" style="display: none; margin-top: 10px;">
+                        <button class="btn-primary btn-pause" onclick="pauseCampaignContacts()" style="width: 100%; margin-bottom: 10px;">⏸️ Pausar</button>
+                        <button class="btn-primary btn-stop" onclick="stopCampaignContacts()" style="width: 100%;">🛑 Detener</button>
                     </div>
-                    <div style="margin-top: 10px;">
-                        <label>
-                            <input type="checkbox" id="select-all-contacts" onchange="toggleSelectAllContacts()">
-                            Seleccionar Todos
-                        </label>
+                    
+                    <div id="status-message-contacts" class="status-message"></div>
                     </div>
+                    
+                    <!-- COLUMNA DERECHA - Opciones Avanzadas -->
+                    <div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
+                                <span style="font-size: 1.2em;">⚙️</span>
+                                <span style="font-weight: bold; font-size: 1.1em;">Opciones Avanzadas</span>
+                            </label>
+                            
+                            <div style="border: 2px solid #e5e7eb; border-radius: 10px; padding: 20px; background: white;">
+                                
+                                <!-- Agregar intervalos de tiempo -->
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px; cursor: pointer;">
+                                        <input type="checkbox" id="enable-delays-contacts" onchange="toggleDelayOptionsContacts()" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981; flex-shrink: 0;">
+                                        <span style="font-weight: 600; color: #333; font-size: 1.05em;">Agregar un intervalo de tiempo entre mensajes</span>
+                                    </label>
+                                    
+                                    <div id="delay-options-contacts" style="margin-top: 15px; display: none; padding: 15px; background: #f9fafb; border-radius: 8px;">
+                                        <!-- Opción con Slider -->
+                                        <div style="margin-bottom: 20px;">
+                                            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; cursor: pointer;">
+                                                <input type="radio" name="delay-mode-contacts" value="slider" checked onchange="toggleDelayModeContacts()" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;">
+                                                <span style="font-weight: 500; color: #333;">Fijo</span>
+                                            </label>
+                                            
+                                            <div id="slider-option-contacts" style="display: flex; align-items: center; gap: 15px; padding-left: 28px; padding-top: 10px; padding-bottom: 10px;">
+                                                <input type="range" id="delay-slider-contacts" min="1" max="60" value="3" step="1" oninput="updateSliderValueContacts()" style="flex: 1; background: linear-gradient(to right, #10b981 0%, #10b981 5%, #e5e7eb 5%, #e5e7eb 100%);">
+                                                <input type="number" id="delay-slider-value-contacts" value="3" min="1" max="60" step="1" oninput="updateSliderFromInputContacts()" style="width: 80px; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em; text-align: center;">
+                                                <span style="color: #666; font-weight: 500;">sec</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Opción Aleatorio -->
+                                        <div style="margin-bottom: 20px;">
+                                            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer;">
+                                                <input type="radio" name="delay-mode-contacts" value="random" onchange="toggleDelayModeContacts()" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;">
+                                                <span style="font-weight: 500; color: #333;">Aleatorio</span>
+                                            </label>
+                                        </div>
+                                        
+                                        <!-- Opción Personalizado aleatorio (Recomendado) -->
+                                        <div>
+                                            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; cursor: pointer;">
+                                                <input type="radio" name="delay-mode-contacts" value="custom" onchange="toggleDelayModeContacts()" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;">
+                                                <span style="font-weight: 500; color: #333;">Personalizado aleatorio <span style="color: #ef4444; font-weight: 600;">(Recomendado)</span></span>
+                                                <span style="margin-left: auto; color: #9ca3af; cursor: help;" title="Esta opción varía el tiempo entre mensajes de forma aleatoria para parecer más natural">❓</span>
+                                            </label>
+                                            
+                                            <div id="custom-option-contacts" style="display: none; padding-left: 28px;">
+                                                <div style="display: flex; gap: 10px; align-items: center;">
+                                                    <span style="color: #666; font-weight: 500;">De:</span>
+                                                    <input type="number" id="delay-min-contacts" value="5" min="1" max="60" step="1" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
+                                                    <span style="color: #666; font-weight: 500;">A:</span>
+                                                    <input type="number" id="delay-max-contacts" value="15" min="1" max="60" step="1" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
+                                                    <span style="color: #666; font-weight: 500;">segundos</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Agregar lotes -->
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="enable-batches-contacts" onchange="toggleBatchOptionsContacts()" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981; flex-shrink: 0;">
+                                        <span style="font-weight: 600; color: #333; font-size: 1.05em;">Agregar lotes <span style="color: #10b981;">(Recomendado)</span></span>
+                                    </label>
+                                    
+                                    <div id="batch-options-contacts" style="margin-top: 10px; display: none; padding: 15px; background: #f9fafb; border-radius: 8px;">
+                                        <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 10px; font-weight: 500;">Enviar en lotes de</label>
+                                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                                            <input type="range" id="batch-size-slider-contacts" min="10" max="50" value="50" step="1" oninput="updateBatchSizeValueContacts()" style="flex: 1; background: linear-gradient(to right, #10b981 0%, #10b981 100%, #e5e7eb 100%, #e5e7eb 100%);">
+                                            <input type="number" id="batch-size-contacts" value="50" min="10" max="50" step="1" oninput="updateBatchSizeFromInputContacts()" style="width: 80px; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em; text-align: center;">
+                                            <span style="color: #666; font-weight: 500;">mensajes</span>
+                                        </div>
+                                        
+                                        <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 10px; font-weight: 500;">Agregue un intervalo de tiempo en lotes en blanco y negro de</label>
+                                        <div style="display: flex; align-items: center; gap: 15px;">
+                                            <input type="range" id="batch-delay-slider-contacts" min="5" max="50" value="30" step="1" oninput="updateBatchDelayValueContacts()" style="flex: 1; background: linear-gradient(to right, #10b981 0%, #10b981 56%, #e5e7eb 56%, #e5e7eb 100%);">
+                                            <input type="number" id="batch-delay-contacts" value="30" min="5" max="50" step="1" oninput="updateBatchDelayFromInputContacts()" style="width: 80px; padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em; text-align: center;">
+                                            <span style="color: #666; font-weight: 500;">segundos</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Programe su campaña -->
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="enable-schedule-contacts" onchange="toggleScheduleOptionsContacts()" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981; flex-shrink: 0;">
+                                        <span style="font-weight: 600; color: #333; font-size: 1.05em;">Programe su campaña</span>
+                                    </label>
+                                    
+                                    <div id="schedule-options-contacts" style="margin-top: 10px; display: none; padding: 15px; background: #f9fafb; border-radius: 8px;">
+                                        <label style="display: block; color: #666; font-size: 0.9em; margin-bottom: 10px; font-weight: 500;">Fecha y hora de inicio</label>
+                                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                            <input type="date" id="schedule-date-contacts" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
+                                            <input type="time" id="schedule-time-contacts" style="flex: 1; padding: 10px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 1em;">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Botones de campañas -->
+                                    <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+                                        <div style="position: relative;">
+                                            <button onclick="toggleUpcomingCampaignsContacts()" id="upcoming-campaigns-contacts-btn" style="width: 100%; padding: 12px 20px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 8px; font-weight: 600; font-size: 1em; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='white'">
+                                                <span>Ver campañas programadas</span>
+                                                <span style="font-size: 0.8em;">▼</span>
+                                            </button>
+                                            
+                                            <!-- Dropdown de campañas programadas -->
+                                            <div id="upcoming-campaigns-contacts-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 5px; z-index: 1000; max-height: 300px; overflow-y: auto;">
+                                                <div style="padding: 20px; color: #9ca3af; text-align: center; font-size: 0.95em;">
+                                                    No hay campañas programadas
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div style="position: relative;">
+                                            <button onclick="togglePausedCampaignsContacts()" id="paused-campaigns-contacts-btn" style="width: 100%; padding: 12px 20px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 8px; font-weight: 600; font-size: 1em; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s;" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='white'">
+                                                <span>Reanudar campañas pausadas</span>
+                                                <span style="font-size: 0.8em;">▼</span>
+                                            </button>
+                                            
+                                            <!-- Dropdown de campañas pausadas -->
+                                            <div id="paused-campaigns-contacts-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 5px; z-index: 1000; max-height: 300px; overflow-y: auto;">
+                                                <div style="padding: 20px; color: #9ca3af; text-align: center; font-size: 0.95em;">
+                                                    Sin campañas pausadas
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
                 </div>
 
 
@@ -2592,6 +2821,339 @@
             
             const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
             slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        // ============================================
+        // FUNCIONES PARA CONTACTS
+        // ============================================
+
+        let selectedContacts = [];
+        let allContacts = [];
+
+        function toggleContactsDropdown() {
+            const dropdown = document.getElementById('contacts-dropdown-menu');
+            const isVisible = dropdown.style.display === 'block';
+            dropdown.style.display = isVisible ? 'none' : 'block';
+            
+            if (!isVisible) {
+                document.getElementById('search-contacts').value = '';
+                filterContacts();
+            }
+        }
+
+        function filterContacts() {
+            const searchTerm = document.getElementById('search-contacts').value.toLowerCase();
+            const filtered = allContacts.filter(contact => 
+                (contact.name || '').toLowerCase().includes(searchTerm)
+            );
+            displayContacts(filtered);
+        }
+
+        function displayContacts(contacts) {
+            const container = document.getElementById('contacts-list');
+            
+            if (contacts.length === 0) {
+                container.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">No hay contactos disponibles</p>';
+                return;
+            }
+
+            container.innerHTML = contacts.map(contact => {
+                const isChecked = selectedContacts.includes(contact.id) ? 'checked' : '';
+                return `
+                <label style="display: flex; align-items: center; gap: 10px; padding: 12px; border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                    <input type="checkbox" class="contact-checkbox" value="${contact.id}" onchange="updateSelectedContacts()" ${isChecked} style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;">
+                    <span style="flex: 1; color: #333; font-size: 0.95em;">${contact.name || 'Contacto sin nombre'}</span>
+                </label>
+            `;
+            }).join('');
+        }
+
+        function toggleSelectAllContacts() {
+            const selectAll = document.getElementById('select-all-contacts').checked;
+            const checkboxes = document.querySelectorAll('.contact-checkbox');
+            
+            checkboxes.forEach(cb => {
+                cb.checked = selectAll;
+            });
+            
+            updateSelectedContacts();
+        }
+
+        function updateSelectedContacts() {
+            const checkboxes = document.querySelectorAll('.contact-checkbox:checked');
+            selectedContacts = Array.from(checkboxes).map(cb => cb.value);
+            updateContactsDisplay();
+        }
+
+        function updateContactsDisplay() {
+            const placeholder = document.getElementById('contacts-placeholder');
+            const display = document.getElementById('contacts-selected-display');
+            
+            if (selectedContacts.length === 0) {
+                placeholder.style.display = 'block';
+                display.style.display = 'none';
+            } else {
+                placeholder.style.display = 'none';
+                display.style.display = 'block';
+                
+                const selectedNames = selectedContacts.map(id => {
+                    const contact = allContacts.find(c => c.id === id);
+                    return contact ? contact.name : id;
+                });
+                
+                display.textContent = `${selectedContacts.length} contacto(s) seleccionado(s): ${selectedNames.slice(0, 3).join(', ')}${selectedContacts.length > 3 ? '...' : ''}`;
+            }
+        }
+
+        async function loadContacts() {
+            // Simular carga de contactos
+            allContacts = [
+                { id: '1', name: 'Juan Pérez' },
+                { id: '2', name: 'María García' },
+                { id: '3', name: 'Carlos López' }
+            ];
+            displayContacts(allContacts);
+        }
+
+        function formatTextContacts(type) {
+            const textarea = document.getElementById('message-contacts');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            
+            if (!selectedText) {
+                alert('Por favor selecciona el texto que deseas formatear');
+                return;
+            }
+            
+            let formattedText = '';
+            switch(type) {
+                case 'bold':
+                    formattedText = `*${selectedText}*`;
+                    break;
+                case 'italic':
+                    formattedText = `_${selectedText}_`;
+                    break;
+                case 'strike':
+                    formattedText = `~${selectedText}~`;
+                    break;
+                case 'code':
+                    formattedText = `\`${selectedText}\``;
+                    break;
+            }
+            
+            textarea.value = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start, start + formattedText.length);
+        }
+
+        function attachFileContacts() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*,video/*,application/pdf,.doc,.docx';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    alert(`Archivo seleccionado: ${file.name}\n(Funcionalidad de envío en desarrollo)`);
+                }
+            };
+            input.click();
+        }
+
+        function toggleTemplateMenuContacts() {
+            const dropdown = document.getElementById('template-contacts-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showAddTemplateModalContacts() {
+            document.getElementById('add-template-modal').style.display = 'flex';
+            document.getElementById('template-contacts-dropdown').style.display = 'none';
+        }
+
+        function toggleCampaignContactsMenu() {
+            const dropdown = document.getElementById('campaign-contacts-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showAddCampaignContactModal() {
+            alert('Funcionalidad en desarrollo');
+        }
+
+        async function sendCampaignContacts() {
+            if (selectedContacts.length === 0) {
+                showStatusContacts('error', 'Por favor selecciona al menos un contacto');
+                return;
+            }
+
+            const message = document.getElementById('message-contacts').value.trim();
+            if (!message) {
+                showStatusContacts('error', 'Por favor escribe un mensaje');
+                return;
+            }
+
+            showStatusContacts('info', '🚀 Iniciando campaña...');
+        }
+
+        function pauseCampaignContacts() {
+            showStatusContacts('info', '⏸️ Pausando campaña...');
+        }
+
+        function stopCampaignContacts() {
+            if (confirm('¿Estás seguro de que quieres detener la campaña?')) {
+                showStatusContacts('info', '🛑 Deteniendo campaña...');
+                document.getElementById('campaign-controls-contacts').style.display = 'none';
+            }
+        }
+
+        function showStatusContacts(type, message) {
+            const statusDiv = document.getElementById('status-message-contacts');
+            statusDiv.className = 'status-message ' + type;
+            statusDiv.textContent = message;
+        }
+
+        function toggleDelayOptionsContacts() {
+            const checkbox = document.getElementById('enable-delays-contacts');
+            const options = document.getElementById('delay-options-contacts');
+            options.style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function toggleDelayModeContacts() {
+            const mode = document.querySelector('input[name="delay-mode-contacts"]:checked').value;
+            const customOption = document.getElementById('custom-option-contacts');
+            const sliderOption = document.getElementById('slider-option-contacts');
+            const delaySlider = document.getElementById('delay-slider-contacts');
+            const delaySliderValue = document.getElementById('delay-slider-value-contacts');
+            
+            if (mode === 'custom') {
+                customOption.style.display = 'block';
+                sliderOption.style.display = 'flex';
+                delaySlider.disabled = true;
+                delaySliderValue.disabled = true;
+                sliderOption.style.opacity = '0.5';
+                sliderOption.style.pointerEvents = 'none';
+            } else if (mode === 'slider') {
+                customOption.style.display = 'none';
+                sliderOption.style.display = 'flex';
+                delaySlider.disabled = false;
+                delaySliderValue.disabled = false;
+                sliderOption.style.opacity = '1';
+                sliderOption.style.pointerEvents = 'auto';
+            } else {
+                customOption.style.display = 'none';
+                sliderOption.style.display = 'none';
+            }
+        }
+
+        function updateSliderValueContacts() {
+            const slider = document.getElementById('delay-slider-contacts');
+            const input = document.getElementById('delay-slider-value-contacts');
+            input.value = parseInt(slider.value);
+            
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        function updateSliderFromInputContacts() {
+            const slider = document.getElementById('delay-slider-contacts');
+            const input = document.getElementById('delay-slider-value-contacts');
+            
+            let value = parseInt(input.value) || 1;
+            if (value < 1) value = 1;
+            if (value > 60) value = 60;
+            
+            input.value = value;
+            slider.value = value;
+            
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        function toggleBatchOptionsContacts() {
+            const checkbox = document.getElementById('enable-batches-contacts');
+            const options = document.getElementById('batch-options-contacts');
+            options.style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function updateBatchSizeValueContacts() {
+            const slider = document.getElementById('batch-size-slider-contacts');
+            const input = document.getElementById('batch-size-contacts');
+            input.value = parseInt(slider.value);
+            
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        function updateBatchSizeFromInputContacts() {
+            const slider = document.getElementById('batch-size-slider-contacts');
+            const input = document.getElementById('batch-size-contacts');
+            
+            let value = parseInt(input.value) || 10;
+            if (value < 10) value = 10;
+            if (value > 50) value = 50;
+            
+            input.value = value;
+            slider.value = value;
+            
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        function updateBatchDelayValueContacts() {
+            const slider = document.getElementById('batch-delay-slider-contacts');
+            const input = document.getElementById('batch-delay-contacts');
+            input.value = parseInt(slider.value);
+            
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        function updateBatchDelayFromInputContacts() {
+            const slider = document.getElementById('batch-delay-slider-contacts');
+            const input = document.getElementById('batch-delay-contacts');
+            
+            let value = parseInt(input.value) || 5;
+            if (value < 5) value = 5;
+            if (value > 50) value = 50;
+            
+            input.value = value;
+            slider.value = value;
+            
+            const percentage = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+        }
+
+        function toggleScheduleOptionsContacts() {
+            const checkbox = document.getElementById('enable-schedule-contacts');
+            const options = document.getElementById('schedule-options-contacts');
+            
+            if (checkbox.checked) {
+                options.style.display = 'block';
+                
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const dateString = `${year}-${month}-${day}`;
+                
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const timeString = `${hours}:${minutes}`;
+                
+                document.getElementById('schedule-date-contacts').value = dateString;
+                document.getElementById('schedule-time-contacts').value = timeString;
+            } else {
+                options.style.display = 'none';
+            }
+        }
+
+        function toggleUpcomingCampaignsContacts() {
+            const dropdown = document.getElementById('upcoming-campaigns-contacts-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function togglePausedCampaignsContacts() {
+            const dropdown = document.getElementById('paused-campaigns-contacts-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
         }
     </script>
 </body>
