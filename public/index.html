@@ -1057,7 +1057,10 @@
         }
 
         function goToSendMessages() {
-            window.location.href = `/send-messages?phone=${encodeURIComponent(userPhone)}&mode=groups`;
+            // Abrir el modal de configurar mensaje con iframe
+            const iframe = document.getElementById('configure-iframe');
+            iframe.src = `/send-messages?phone=${encodeURIComponent(userPhone)}&mode=groups`;
+            document.getElementById('configure-message-modal').style.display = 'flex';
         }
 
         function changePhone() {
