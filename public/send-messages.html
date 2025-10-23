@@ -422,37 +422,32 @@
                             <div class="form-group">
                                 <label>Ingrese números para enviar mensajes</label>
                                 
-                                <!-- Contenedor tipo textarea con todo integrado -->
-                                <div style="border: 2px solid #d1d5db; border-radius: 10px; background: white; overflow: hidden;">
-                            
-                            <!-- Header con selector de país -->
-                            <div style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb; background: #fafafa;">
-                                <div style="position: relative; display: inline-block;">
-                                    <div id="country-selector-btn" onclick="toggleCountryDropdown()" style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.95em;">
-                                        <img id="selected-flag-img" src="https://flagcdn.com/w40/ca.png" alt="CA" style="width: 26px; height: 18px; border-radius: 2px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-                                        <span id="selected-code" style="color: #10b981; font-weight: bold;">+1</span>
-                                        <span style="margin-left: 5px; color: #666; font-size: 0.8em;">▼</span>
-                                    </div>
-                                    
-                                    <!-- Dropdown de países -->
-                                    <div id="country-dropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 320px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 5px; z-index: 1000; max-height: 400px; overflow: hidden;">
-                                        <!-- Barra de búsqueda -->
-                                        <div style="padding: 10px; border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
-                                            <input type="text" id="country-search" placeholder="🔍 Buscar país..." style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9em;" oninput="filterCountries()" onclick="event.stopPropagation()">
-                                        </div>
-                                        
-                                        <!-- Lista de países -->
-                                        <div id="countries-list" style="max-height: 350px; overflow-y: auto;">
-                                            <!-- Los países se cargarán aquí -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
                             <!-- Área de contenido con tags de números -->
                             <div style="padding: 15px;">
-                                <!-- Contenedor único con tags y textarea -->
-                                <div style="border: 2px solid #d1d5db; border-radius: 10px; background: white; padding: 15px; min-height: 150px;">
+                                <!-- Contenedor único con selector de país, tags y textarea -->
+                                <div style="border: 2px solid #d1d5db; border-radius: 10px; background: white; padding: 15px; min-height: 150px; position: relative;">
+                                    <!-- Selector de país dentro del contenedor -->
+                                    <div style="position: relative; display: inline-block; margin-bottom: 10px;">
+                                        <div id="country-selector-btn" onclick="toggleCountryDropdown()" style="padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 6px; background: white; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.95em;">
+                                            <img id="selected-flag-img" src="https://flagcdn.com/w40/ca.png" alt="CA" style="width: 26px; height: 18px; border-radius: 2px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                                            <span id="selected-code" style="color: #10b981; font-weight: bold;">+1</span>
+                                            <span style="margin-left: 5px; color: #666; font-size: 0.8em;">▼</span>
+                                        </div>
+                                        
+                                        <!-- Dropdown de países -->
+                                        <div id="country-dropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 320px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 5px; z-index: 1000; max-height: 400px; overflow: hidden;">
+                                            <!-- Barra de búsqueda -->
+                                            <div style="padding: 10px; border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
+                                                <input type="text" id="country-search" placeholder="🔍 Buscar país..." style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9em;" oninput="filterCountries()" onclick="event.stopPropagation()">
+                                            </div>
+                                            
+                                            <!-- Lista de países -->
+                                            <div id="countries-list" style="max-height: 350px; overflow-y: auto;">
+                                                <!-- Los países se cargarán aquí -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <!-- Contenedor de números seleccionados como tags -->
                                     <div id="numbers-selected-tags" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
                                         <!-- Los tags se agregarán aquí dinámicamente -->
@@ -461,10 +456,9 @@
                                     <!-- Textarea para agregar números -->
                                     <textarea id="numbers-input" placeholder="Escriba un número y presione Enter..." style="width: 100%; min-height: 80px; font-family: monospace; padding: 0; border: none; font-size: 0.95em; resize: none; outline: none; background: transparent;" onkeydown="handleNumberInput(event)"></textarea>
                                 </div>
-                            </div>
                             
-                            <!-- Footer con botones -->
-                            <div style="padding: 12px 15px; border-top: 1px solid #e5e7eb; background: #fafafa; display: flex; gap: 10px; align-items: center; justify-content: space-between;">
+                            <!-- Botones debajo del contenedor -->
+                            <div style="display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-top: 15px;">
                                 <button onclick="showExampleNumbers()" style="display: flex; align-items: center; gap: 5px; padding: 8px 16px; background: white; border: 2px solid #10b981; color: #10b981; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;">
                                     📋 Ejemplo
                                 </button>
