@@ -2174,10 +2174,7 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    showStatus('success', '✅ Campaña iniciada exitosamente');
-                    setTimeout(() => {
-                        showStatus('info', '📤 Enviando mensajes...');
-                    }, 1000);
+                    showStatus('info', '📤 Enviando mensajes...');
                 } else {
                     showStatus('error', result.message || 'Error al iniciar campaña');
                     document.getElementById('campaign-controls').style.display = 'none';
@@ -2206,6 +2203,45 @@
             const statusDiv = document.getElementById('status-message');
             statusDiv.className = 'status-message ' + type;
             statusDiv.textContent = message;
+        }
+
+        function setupSocketListeners() {
+            // Escuchar cuando la campaña se complete
+            socket.on('campaign-completed', (data) => {
+                if (data.phone === phone) {
+                    console.log('Campaña completada:', data);
+                    showStatus('success', '✅ Mensaje enviado');
+                    document.getElementById('campaign-controls').style.display = 'none';
+                    
+                    // Limpiar el textarea del mensaje según el modo activo
+                    const selectedMode = document.querySelector('input[name="send-mode"]:checked').value;
+                    if (selectedMode === 'numbers') {
+                        document.getElementById('message-numbers').value = '';
+                    } else if (selectedMode === 'groups') {
+                        document.getElementById('message-groups').value = '';
+                    } else if (selectedMode === 'contacts') {
+                        document.getElementById('message-contacts').value = '';
+                    }
+                }
+            });
+
+            // Escuchar errores de campaña
+            socket.on('campaign-error', (data) => {
+                if (data.phone === phone) {
+                    console.error('Error en campaña:', data);
+                    showStatus('error', '❌ Error al enviar mensaje: ' + data.error);
+                    document.getElementById('campaign-controls').style.display = 'none';
+                }
+            });
+
+            // Escuchar progreso de campaña (opcional)
+            socket.on('campaign-progress', (data) => {
+                if (data.phone === phone) {
+                    console.log('Progreso:', data);
+                    const progress = `${data.sent}/${data.total}`;
+                    showStatus('info', `📤 Enviando mensajes... (${progress})`);
+                }
+            });
         }
 
         function goBack() {
