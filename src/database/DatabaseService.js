@@ -10,6 +10,13 @@ class DatabaseService {
     constructor() {
         const dbPath = path.join(__dirname, '../../database/groups.db');
         this.db = new Database(dbPath);
+        
+        // Optimizaciones de rendimiento para SQLite
+        this.db.pragma('journal_mode = WAL'); // Write-Ahead Logging para mejor concurrencia
+        this.db.pragma('synchronous = NORMAL'); // Balance entre velocidad y seguridad
+        this.db.pragma('cache_size = -64000'); // 64MB de cache
+        this.db.pragma('temp_store = MEMORY'); // Usar memoria para operaciones temporales
+        
         this.initDatabase();
     }
 
